@@ -492,7 +492,7 @@ function doPost(e) {
         let activeCategory = 'all';
         let activeSubTab = 'items';
         let uploadedImageBase64 = '';
-        const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbxhEaVTs6it5yfm7Bcz8-jkhkUxBIHKqNkKWCF_gNUtXl7bsTipO8EkrS1ZlNPDPBPy/exec';
+        let googleScriptUrl  = 'https://script.google.com/macros/s/AKfycbxhEaVTs6it5yfm7Bcz8-jkhkUxBIHKqNkKWCF_gNUtXl7bsTipO8EkrS1ZlNPDPBPy/exec';
 
         // Initialize App on Load
         window.onload = function() {
@@ -1013,33 +1013,39 @@ async function loadItemsFromGoogle() {
 
     try {
 
-        showToast('กำลังโหลดเสื้อผ้าจาก Google Drive...');
+        showToast('กำลังโหลดข้อมูลจาก Google...');
 
         const response = await fetch(googleScriptUrl);
-
         const data = await response.json();
 
         if (data.status !== 'success') {
             throw new Error(data.message || 'โหลดข้อมูลไม่สำเร็จ');
         }
 
+        // โหลดเสื้อผ้าจาก Google
         if (Array.isArray(data.items)) {
+            items = data.items;
+        }
 
-        items = data.items;
+        // โหลด Outfit จาก Google
+        if (Array.isArray(data.outfits)) {
+            outfits = data.outfits;
+        }
 
+        // บันทึกข้อมูลล่าสุดไว้ในเครื่อง
         saveData();
 
+        // Refresh หน้าจอทั้งหมด
         renderItems();
+        renderOutfits();
         populateMixerDropdowns();
         updateMixerCanvas();
+        renderCalendar();
         updateCounts();
 
-            
-
-            showToast(
-                `☁️ โหลดเสื้อผ้าจาก Google สำเร็จ ${items.length} รายการ`
-            );
-        }
+        showToast(
+            `☁️ ซิงก์สำเร็จ เสื้อผ้า ${items.length} รายการ / Outfit ${outfits.length} ชุด`
+        );
 
     } catch (error) {
 
@@ -1051,6 +1057,8 @@ async function loadItemsFromGoogle() {
         );
     }
 }
+
+        
         {
             document.getElementById('count-items').innerText = items.length;
             document.getElementById('count-outfits').innerText = outfits.length;
