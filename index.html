@@ -599,10 +599,10 @@ function doPost(e) {
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-2xl p-2.5 shadow-sm border border-stone-200/80 flex flex-col justify-between relative group hover:shadow-md transition";
                 card.innerHTML = `
-                    <button onclick="toggleFavorite('${item.id}')" class="absolute top-4 right-4 z-10 w-7 h-7 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-stone-400 hover:text-rose-500 shadow-sm transition">
+                    <button onclick="toggleFavorite('${item.id}')" class="absolute top-4 right-4 z-50 w-7 h-7 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-stone-400 hover:text-rose-500 shadow-sm transition">
                         <i class="${item.favorite ? 'fa-solid fa-heart text-rose-500' : 'fa-regular fa-heart'} text-xs"></i>
                     </button>
-                    <button onclick="deleteItem('${item.id}')" class="absolute top-4 left-4 z-10 w-7 h-7 rounded-full bg-rose-500/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-sm transition">
+                    <button onclick="deleteItem('${item.id}')" class="absolute top-4 left-4 z-10 w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-sm transition">
                         <i class="fa-solid fa-trash-can text-[10px]"></i>
                     </button>
                     
