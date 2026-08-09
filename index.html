@@ -746,7 +746,7 @@ function doPost(e) {
                 if (selectedId) {
                     const item = items.find(i => i.id === selectedId);
                     if(item) {
-                        container.innerHTML = `<img src="${item.image}" class="w-full h-full object-contain p-1 rounded-lg">`;
+                        container.innerHTML = `<img src="${item.image}" class="w-full h-full object-contain p-1 rounded-lg" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">`;
                         container.classList.remove('border-dashed');
                         container.classList.add('bg-white', 'shadow-sm');
                     }
