@@ -841,13 +841,44 @@ function openItemDetail(itemId) {
     }
 }
 
-        function deleteItem(id) {
-            items = items.filter(i => i.id !== id);
-            saveData();
-            renderItems();
-            updateCounts();
-            showToast('ลบรายการเสื้อผ้าแล้ว');
+        async function deleteItem(id) {
+    // 1. ลบออกจากหน้าจอทันที
+    items = items.filter(i => String(i.id) !== String(id));
+
+    saveData();
+    renderItems();
+    updateCounts();
+
+    showToast('กำลังลบรายการเสื้อผ้า...');
+
+    // 2. ลบออกจาก Google Sheets
+    if (googleScriptUrl) {
+        try {
+            await fetch(googleScriptUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'delete_item',
+                    id: String(id)
+                })
+            });
+
+            showToast('✅ ลบรายการเสื้อผ้าเรียบร้อยแล้ว');
+
+        } catch (error) {
+            console.error('Delete Item Error:', error);
+            showToast(
+                'ลบในเครื่องแล้ว แต่ลบจาก Google Sheets ไม่สำเร็จ',
+                'error'
+            );
         }
+    } else {
+        showToast('ลบในเครื่องแล้ว แต่ยังไม่ได้เชื่อม Google Sheets', 'warning');
+    }
+}
 
         function toggleFavorite(id) {
             const item = items.find(i => i.id === id);
