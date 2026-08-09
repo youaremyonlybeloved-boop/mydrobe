@@ -744,7 +744,7 @@ function doPost(e) {
                 const selectedId = document.getElementById(`select-${slot}`).value;
                 const container = document.getElementById(`canvas-${slot}`);
                 if (selectedId) {
-                    const item = items.find(i => i.id === selectedId);
+                    const item = items.find(i => String(i.id) === String(selectedId));
                     if(item) {
                         container.innerHTML = `<img src="${item.image}" class="w-full h-full object-contain p-1 rounded-lg" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">`;
                         container.classList.remove('border-dashed');
