@@ -79,26 +79,19 @@
 <div class="px-5 pt-4 pb-2 bg-[#FAF7F2]">
     <div class="flex bg-stone-200/70 rounded-2xl p-1">
 
-      <button
-    id="subtab-all-btn"
-    onclick="switchSubTab('all')"
-    class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
-    All
-</button>
+        <button
+            id="subtab-items-btn"
+            onclick="switchSubTab('items')"
+            class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-white shadow-sm text-stone-900 transition">
+            Items (<span id="count-items">0</span>)
+        </button>
 
-<button
-    id="subtab-items-btn"
-    onclick="switchSubTab('items')"
-    class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-white shadow-sm text-stone-900 transition">
-    Items (<span id="count-items">0</span>)
-</button>
-
-<button
-    id="subtab-outfits-btn"
-    onclick="switchSubTab('outfits')"
-    class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
-    Outfits (<span id="count-outfits">0</span>)
-</button>
+        <button
+            id="subtab-outfits-btn"
+            onclick="switchSubTab('outfits')"
+            class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
+            Outfits (<span id="count-outfits">0</span>)
+        </button>
 
     </div>
 </div>
@@ -111,76 +104,6 @@
 
                 <!-- SUB-TAB: ITEMS GRID -->
                 <div id="subtab-items" class="space-y-4">
-<!-- ALL OVERVIEW -->
-<div id="subtab-all" class="space-y-4 hidden">
-<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-
-    <button onclick="filterCategory('tshirt')"
-        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
-        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
-            <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80"
-                 class="w-full h-full object-contain">
-        </div>
-        <div class="mt-2 text-sm font-semibold">👕 เสื้อ</div>
-        <div id="all-count-tshirt" class="text-xs text-stone-400">0 ชิ้น</div>
-    </button>
-
-    <button onclick="filterCategory('shirt')"
-        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
-        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
-            <img src="https://images.unsplash.com/photo-1603252110481-7ba873bf42ab?auto=format&fit=crop&w=300&q=80"
-                 class="w-full h-full object-contain">
-        </div>
-        <div class="mt-2 text-sm font-semibold">👔 เสื้อเชิ้ต</div>
-        <div id="all-count-shirt" class="text-xs text-stone-400">0 ชิ้น</div>
-    </button>
-
-    <button onclick="filterCategory('jacket')"
-        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
-        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
-            <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=300&q=80"
-                 class="w-full h-full object-contain">
-        </div>
-        <div class="mt-2 text-sm font-semibold">🧥 แจ็กเก็ต</div>
-        <div id="all-count-jacket" class="text-xs text-stone-400">0 ชิ้น</div>
-    </button>
-
-    <button onclick="filterCategory('pants')"
-        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
-        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
-            <img src="https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=300&q=80"
-                 class="w-full h-full object-contain">
-        </div>
-        <div class="mt-2 text-sm font-semibold">👖 กางเกง</div>
-        <div id="all-count-pants" class="text-xs text-stone-400">0 ชิ้น</div>
-    </button>
-
-    <button onclick="filterCategory('glasses')"
-        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
-        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
-            <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=300&q=80"
-                 class="w-full h-full object-contain">
-        </div>
-        <div class="mt-2 text-sm font-semibold">👓 แว่นตา</div>
-        <div id="all-count-glasses" class="text-xs text-stone-400">0 ชิ้น</div>
-    </button>
-
-    <button onclick="filterCategory('shoes')"
-        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
-        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
-            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
-                 class="w-full h-full object-contain">
-        </div>
-        <div class="mt-2 text-sm font-semibold">👞 รองเท้า</div>
-        <div id="all-count-shoes" class="text-xs text-stone-400">0 ชิ้น</div>
-    </button>
-
-</div>
-    
-
-</div>
-
-                    
                     <!-- Filters & Category Chips -->
                     <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
                         <button onclick="filterCategory('all')" class="cat-chip active px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-stone-900 text-white transition">
@@ -612,65 +535,30 @@ function doPost(e) {
             if(tabId === 'calendar') renderCalendar();
         }
 
-       function switchSubTab(sub) {
-    switchTab('closet');
-    activeSubTab = sub;
+        function switchSubTab(sub) {
+            switchTab('closet');
+            activeSubTab = sub;
+            const itemsBtn = document.getElementById('subtab-items-btn');
+            const outfitsBtn = document.getElementById('subtab-outfits-btn');
+            const itemsDiv = document.getElementById('subtab-items');
+            const outfitsDiv = document.getElementById('subtab-outfits');
 
-    const allBtn = document.getElementById('subtab-all-btn');
-    const itemsBtn = document.getElementById('subtab-items-btn');
-    const outfitsBtn = document.getElementById('subtab-outfits-btn');
-
-    const itemsDiv = document.getElementById('subtab-items');
-    const allDiv = document.getElementById('subtab-all');       
-    const outfitsDiv = document.getElementById('subtab-outfits');
-
-    // ALL
-    if (sub === 'all') {
-        allBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
-        allBtn.classList.remove('text-stone-600');
-
-        itemsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
-        itemsBtn.classList.add('text-stone-600');
-
-        outfitsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
-        outfitsBtn.classList.add('text-stone-600');
-        
-        allDiv.classList.remove('hidden');
-        itemsDiv.classList.add('hidden');
-        outfitsDiv.classList.add('hidden');
-
-        // แสดงสินค้าทั้งหมด
-        filterCategory('all');
-
-    // ITEMS
-    } else if (sub === 'items') {
-        allBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
-        allBtn.classList.add('text-stone-600');
-
-        itemsBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
-        itemsBtn.classList.remove('text-stone-600');
-
-        outfitsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
-        outfitsBtn.classList.add('text-stone-600');
-
-        itemsDiv.classList.remove('hidden');
-        outfitsDiv.classList.add('hidden');
-
-    // OUTFITS
-    } else {
-        allBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
-        allBtn.classList.add('text-stone-600');
-
-        outfitsBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
-        outfitsBtn.classList.remove('text-stone-600');
-
-        itemsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
-        itemsBtn.classList.add('text-stone-600');
-
-        outfitsDiv.classList.remove('hidden');
-        itemsDiv.classList.add('hidden');
-    }
-}
+            if (sub === 'items') {
+                itemsBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
+                itemsBtn.classList.remove('text-stone-600');
+                outfitsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
+                outfitsBtn.classList.add('text-stone-600');
+                itemsDiv.classList.remove('hidden');
+                outfitsDiv.classList.add('hidden');
+            } else {
+                outfitsBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
+                outfitsBtn.classList.remove('text-stone-600');
+                itemsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
+                itemsBtn.classList.add('text-stone-600');
+                outfitsDiv.classList.remove('hidden');
+                itemsDiv.classList.add('hidden');
+            }
+        }
 
         // --- RENDER ITEMS ---
         function filterCategory(cat) {
@@ -696,22 +584,6 @@ function doPost(e) {
                                     item.color.toLowerCase().includes(searchQuery);
                 return matchCat && matchSearch;
             });
-            // เรียงลำดับสินค้าในหน้า All
-const categoryOrder = {
-    'tshirt': 1,
-    'shirt': 2,
-    'jacket': 3,
-    'pants': 4,
-    'glasses': 5,
-    'shoes': 6
-};
-
-filtered.sort((a, b) => {
-    const orderA = categoryOrder[a.category] || 99;
-    const orderB = categoryOrder[b.category] || 99;
-
-    return orderA - orderB;
-});
 
             if(filtered.length === 0) {
                 grid.innerHTML = `
