@@ -111,6 +111,76 @@
 
                 <!-- SUB-TAB: ITEMS GRID -->
                 <div id="subtab-items" class="space-y-4">
+<!-- ALL OVERVIEW -->
+<div id="subtab-all" class="space-y-4 hidden">
+<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+
+    <button onclick="filterCategory('tshirt')"
+        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
+        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
+            <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80"
+                 class="w-full h-full object-contain">
+        </div>
+        <div class="mt-2 text-sm font-semibold">👕 เสื้อ</div>
+        <div id="all-count-tshirt" class="text-xs text-stone-400">0 ชิ้น</div>
+    </button>
+
+    <button onclick="filterCategory('shirt')"
+        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
+        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
+            <img src="https://images.unsplash.com/photo-1603252110481-7ba873bf42ab?auto=format&fit=crop&w=300&q=80"
+                 class="w-full h-full object-contain">
+        </div>
+        <div class="mt-2 text-sm font-semibold">👔 เสื้อเชิ้ต</div>
+        <div id="all-count-shirt" class="text-xs text-stone-400">0 ชิ้น</div>
+    </button>
+
+    <button onclick="filterCategory('jacket')"
+        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
+        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
+            <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=300&q=80"
+                 class="w-full h-full object-contain">
+        </div>
+        <div class="mt-2 text-sm font-semibold">🧥 แจ็กเก็ต</div>
+        <div id="all-count-jacket" class="text-xs text-stone-400">0 ชิ้น</div>
+    </button>
+
+    <button onclick="filterCategory('pants')"
+        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
+        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
+            <img src="https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=300&q=80"
+                 class="w-full h-full object-contain">
+        </div>
+        <div class="mt-2 text-sm font-semibold">👖 กางเกง</div>
+        <div id="all-count-pants" class="text-xs text-stone-400">0 ชิ้น</div>
+    </button>
+
+    <button onclick="filterCategory('glasses')"
+        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
+        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
+            <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=300&q=80"
+                 class="w-full h-full object-contain">
+        </div>
+        <div class="mt-2 text-sm font-semibold">👓 แว่นตา</div>
+        <div id="all-count-glasses" class="text-xs text-stone-400">0 ชิ้น</div>
+    </button>
+
+    <button onclick="filterCategory('shoes')"
+        class="bg-white rounded-2xl p-3 shadow-sm border border-stone-100 text-center">
+        <div class="aspect-square bg-stone-50 rounded-xl overflow-hidden flex items-center justify-center">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
+                 class="w-full h-full object-contain">
+        </div>
+        <div class="mt-2 text-sm font-semibold">👞 รองเท้า</div>
+        <div id="all-count-shoes" class="text-xs text-stone-400">0 ชิ้น</div>
+    </button>
+
+</div>
+    
+
+</div>
+
+                    
                     <!-- Filters & Category Chips -->
                     <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
                         <button onclick="filterCategory('all')" class="cat-chip active px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-stone-900 text-white transition">
@@ -551,6 +621,7 @@ function doPost(e) {
     const outfitsBtn = document.getElementById('subtab-outfits-btn');
 
     const itemsDiv = document.getElementById('subtab-items');
+    const allDiv = document.getElementById('subtab-all');       
     const outfitsDiv = document.getElementById('subtab-outfits');
 
     // ALL
@@ -563,8 +634,9 @@ function doPost(e) {
 
         outfitsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
         outfitsBtn.classList.add('text-stone-600');
-
-        itemsDiv.classList.remove('hidden');
+        
+        allDiv.classList.remove('hidden');
+        itemsDiv.classList.add('hidden');
         outfitsDiv.classList.add('hidden');
 
         // แสดงสินค้าทั้งหมด
