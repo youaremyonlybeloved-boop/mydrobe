@@ -627,12 +627,12 @@ function openItemDetail(itemId) {
     const item = items.find(i => String(i.id) === String(itemId));
     if (!item) return;
 
-    const imageUrl = item.image
-        ? item.image.replace(
-            'https://drive.google.com/uc?export=view&id=',
-            'https://drive.google.com/thumbnail?id='
-        )
-        : '';
+   const imageUrl = item.image
+    ? item.image.replace(
+        'https://drive.google.com/uc?export=view&id=',
+        'https://drive.google.com/thumbnail?id='
+      ) + '&sz=w2000'
+    : '';
 
     const modal = document.createElement('div');
 
