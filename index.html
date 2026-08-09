@@ -624,6 +624,22 @@ function doPost(e) {
                                     item.color.toLowerCase().includes(searchQuery);
                 return matchCat && matchSearch;
             });
+            // เรียงลำดับสินค้าในหน้า All
+const categoryOrder = {
+    'tshirt': 1,
+    'shirt': 2,
+    'jacket': 3,
+    'pants': 4,
+    'glasses': 5,
+    'shoes': 6
+};
+
+filtered.sort((a, b) => {
+    const orderA = categoryOrder[a.category] || 99;
+    const orderB = categoryOrder[b.category] || 99;
+
+    return orderA - orderB;
+});
 
             if(filtered.length === 0) {
                 grid.innerHTML = `
