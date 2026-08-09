@@ -1010,13 +1010,38 @@ function openItemDetail(itemId) {
             });
         }
 
-        function deleteOutfit(id) {
-            outfits = outfits.filter(o => o.id !== id);
-            saveData();
-            renderOutfits();
-            updateCounts();
+        async function deleteOutfit(id) {
+    // ลบออกจากหน้าจอทันที
+    outfits = outfits.filter(o => String(o.id) !== String(id));
+
+    saveData();
+    renderOutfits();
+    updateCounts();
+
+    // ลบออกจาก Google Sheets
+    if (googleScriptUrl) {
+        try {
+            await fetch(googleScriptUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'delete_outfit',
+                    id: String(id)
+                })
+            });
+
             showToast('ลบเซ็ตแต่งตัวแล้ว');
+        } catch (error) {
+            console.error(error);
+            showToast('ลบในเครื่องแล้ว แต่ยังซิงก์ Google Sheets ไม่สำเร็จ', 'error');
         }
+    } else {
+        showToast('ลบเซ็ตแต่งตัวแล้ว');
+    }
+}
 
         // --- CALENDAR PLANNER ---
         function renderCalendar() {
