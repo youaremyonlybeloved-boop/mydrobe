@@ -79,19 +79,26 @@
 <div class="px-5 pt-4 pb-2 bg-[#FAF7F2]">
     <div class="flex bg-stone-200/70 rounded-2xl p-1">
 
-        <button
-            id="subtab-items-btn"
-            onclick="switchSubTab('items')"
-            class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-white shadow-sm text-stone-900 transition">
-            Items (<span id="count-items">0</span>)
-        </button>
+      <button
+    id="subtab-all-btn"
+    onclick="switchSubTab('all')"
+    class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
+    All
+</button>
 
-        <button
-            id="subtab-outfits-btn"
-            onclick="switchSubTab('outfits')"
-            class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
-            Outfits (<span id="count-outfits">0</span>)
-        </button>
+<button
+    id="subtab-items-btn"
+    onclick="switchSubTab('items')"
+    class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-white shadow-sm text-stone-900 transition">
+    Items (<span id="count-items">0</span>)
+</button>
+
+<button
+    id="subtab-outfits-btn"
+    onclick="switchSubTab('outfits')"
+    class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
+    Outfits (<span id="count-outfits">0</span>)
+</button>
 
     </div>
 </div>
@@ -535,30 +542,63 @@ function doPost(e) {
             if(tabId === 'calendar') renderCalendar();
         }
 
-        function switchSubTab(sub) {
-            switchTab('closet');
-            activeSubTab = sub;
-            const itemsBtn = document.getElementById('subtab-items-btn');
-            const outfitsBtn = document.getElementById('subtab-outfits-btn');
-            const itemsDiv = document.getElementById('subtab-items');
-            const outfitsDiv = document.getElementById('subtab-outfits');
+       function switchSubTab(sub) {
+    switchTab('closet');
+    activeSubTab = sub;
 
-            if (sub === 'items') {
-                itemsBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
-                itemsBtn.classList.remove('text-stone-600');
-                outfitsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
-                outfitsBtn.classList.add('text-stone-600');
-                itemsDiv.classList.remove('hidden');
-                outfitsDiv.classList.add('hidden');
-            } else {
-                outfitsBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
-                outfitsBtn.classList.remove('text-stone-600');
-                itemsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
-                itemsBtn.classList.add('text-stone-600');
-                outfitsDiv.classList.remove('hidden');
-                itemsDiv.classList.add('hidden');
-            }
-        }
+    const allBtn = document.getElementById('subtab-all-btn');
+    const itemsBtn = document.getElementById('subtab-items-btn');
+    const outfitsBtn = document.getElementById('subtab-outfits-btn');
+
+    const itemsDiv = document.getElementById('subtab-items');
+    const outfitsDiv = document.getElementById('subtab-outfits');
+
+    // ALL
+    if (sub === 'all') {
+        allBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
+        allBtn.classList.remove('text-stone-600');
+
+        itemsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
+        itemsBtn.classList.add('text-stone-600');
+
+        outfitsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
+        outfitsBtn.classList.add('text-stone-600');
+
+        itemsDiv.classList.remove('hidden');
+        outfitsDiv.classList.add('hidden');
+
+        // แสดงสินค้าทั้งหมด
+        filterCategory('all');
+
+    // ITEMS
+    } else if (sub === 'items') {
+        allBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
+        allBtn.classList.add('text-stone-600');
+
+        itemsBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
+        itemsBtn.classList.remove('text-stone-600');
+
+        outfitsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
+        outfitsBtn.classList.add('text-stone-600');
+
+        itemsDiv.classList.remove('hidden');
+        outfitsDiv.classList.add('hidden');
+
+    // OUTFITS
+    } else {
+        allBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
+        allBtn.classList.add('text-stone-600');
+
+        outfitsBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
+        outfitsBtn.classList.remove('text-stone-600');
+
+        itemsBtn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
+        itemsBtn.classList.add('text-stone-600');
+
+        outfitsDiv.classList.remove('hidden');
+        itemsDiv.classList.add('hidden');
+    }
+}
 
         // --- RENDER ITEMS ---
         function filterCategory(cat) {
