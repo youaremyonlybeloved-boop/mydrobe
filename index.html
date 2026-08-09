@@ -506,6 +506,7 @@ function doPost(e) {
             if(googleScriptUrl) {
                 document.getElementById('google-script-url').value = googleScriptUrl;
             }
+            loadItemsFromGoogle();
         };
 
         // --- NAVIGATION & TABS ---
@@ -956,13 +957,67 @@ function doPost(e) {
         }
 
         // --- UTILS ---
-        function saveData() {
+        function saveData()
+        
+        {
             localStorage.setItem('my_closet_items', JSON.stringify(items));
             localStorage.setItem('my_closet_outfits', JSON.stringify(outfits));
             localStorage.setItem('my_closet_calendar', JSON.stringify(calendarPlan));
         }
 
-        function updateCounts() {
+
+        
+function updateCounts() {
+    document.getElementById('count-items').innerText = items.length;
+    document.getElementById('count-outfits').innerText = outfits.length;
+}
+
+
+// ต้องอยู่นอก updateCounts
+async function loadItemsFromGoogle() {
+
+    if (!googleScriptUrl) {
+        console.log('ยังไม่ได้ตั้งค่า Google Apps Script URL');
+        return;
+    }
+
+    try {
+
+        showToast('กำลังโหลดเสื้อผ้าจาก Google Drive...');
+
+        const response = await fetch(googleScriptUrl);
+
+        const data = await response.json();
+
+        if (data.status !== 'success') {
+            throw new Error(data.message || 'โหลดข้อมูลไม่สำเร็จ');
+        }
+
+        if (Array.isArray(data.items)) {
+
+            items = data.items;
+
+            saveData();
+
+            renderItems();
+            updateCounts();
+
+            showToast(
+                `☁️ โหลดเสื้อผ้าจาก Google สำเร็จ ${items.length} รายการ`
+            );
+        }
+
+    } catch (error) {
+
+        console.error('Google Load Error:', error);
+
+        showToast(
+            'โหลดข้อมูลจาก Google ไม่สำเร็จ',
+            'error'
+        );
+    }
+}
+        {
             document.getElementById('count-items').innerText = items.length;
             document.getElementById('count-outfits').innerText = outfits.length;
         }
