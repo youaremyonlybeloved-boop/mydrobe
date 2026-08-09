@@ -82,7 +82,7 @@
                     id="subtab-all-btn"
                     onclick="switchSubTab('all')"
                     class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
-                    ALL (<span id="count-all">0</span>)
+                    ALL 
                 </button>
 
                 <button
@@ -1176,7 +1176,7 @@ function doPost(e) {
         }
 
         function updateCounts() {
-            document.getElementById('count-all').innerText = items.length;
+        
             document.getElementById('count-items').innerText = items.length;
             document.getElementById('count-outfits').innerText = outfits.length;
         }
