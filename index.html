@@ -799,6 +799,24 @@ function doPost(e) {
 
             outfits.unshift(newOutfit);
             saveData();
+
+            if (googleScriptUrl) {
+            fetch(googleScriptUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+            'Content-Type': 'application/json'
+                },
+            body: JSON.stringify({
+            action: 'save_outfit',
+            outfit: newOutfit
+                })
+            }).catch(error => {
+            console.error('Save Outfit Error:', error);
+            });
+            }
+
+
             renderOutfits();
             updateCounts();
             showToast('บันทึกเซ็ตแต่งตัวเรียบร้อย!');
