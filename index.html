@@ -85,12 +85,13 @@
                     ALL 
                 </button>
 
-                <button
-                    id="subtab-items-btn"
-                    onclick="switchSubTab('items')"
-                    class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-white shadow-sm text-stone-900 transition">
-                    Items (<span id="count-items">0</span>)
-                </button>
+                <!-- โค้ดใหม่ (ย้าย bg-white shadow-sm text-stone-900 ไปที่ปุ่ม ALL) -->
+<button id="subtab-all-btn" onclick="switchSubTab('all')" class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-white shadow-sm text-stone-900 transition">
+    ALL
+</button>
+<button id="subtab-items-btn" onclick="switchSubTab('items')" class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
+    Items (<span id="count-items">0</span>)
+</button>
 
                 <button
                     id="subtab-outfits-btn"
@@ -107,14 +108,14 @@
             <section id="tab-closet" class="tab-content block">
 
                 <!-- SUB-TAB: ALL GRID (เน้นแสดงเฉพาะรูปในตารางเหมือนภาพตัวอย่าง 3) -->
-                <div id="subtab-all" class="hidden space-y-4">
+                <div id="subtab-all" class="space-y-4">
                     <div id="all-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                         <!-- Dynamic Minimal Items loaded via JS -->
                     </div>
                 </div>
 
                 <!-- SUB-TAB: ITEMS GRID -->
-                <div id="subtab-items" class="space-y-4">
+                <div id="subtab-items" class="hidden space-y-4">
                     <!-- Filters & Category Chips -->
                     <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
                         <button onclick="filterCategory('all')" class="cat-chip active px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-stone-900 text-white transition">
@@ -504,7 +505,8 @@ function doPost(e) {
         let outfits = JSON.parse(localStorage.getItem('my_closet_outfits')) || [];
         let calendarPlan = JSON.parse(localStorage.getItem('my_closet_calendar')) || {};
         let activeCategory = 'all';
-        let activeSubTab = 'items';
+        // โค้ดใหม่
+        let activeSubTab = 'all';
         let uploadedImageBase64 = '';
         let googleScriptUrl  = 'https://script.google.com/macros/s/AKfycbxhEaVTs6it5yfm7Bcz8-jkhkUxBIHKqNkKWCF_gNUtXl7bsTipO8EkrS1ZlNPDPBPy/exec';
 
