@@ -75,20 +75,32 @@
                 </button>
             </div>
         </header>
+<!-- GLOBAL ITEMS / OUTFITS SWITCH -->
+<div class="px-5 pt-4 pb-2 bg-[#FAF7F2]">
+    <div class="flex bg-stone-200/70 rounded-2xl p-1">
 
+        <button
+            id="subtab-items-btn"
+            onclick="switchSubTab('items')"
+            class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-white shadow-sm text-stone-900 transition">
+            Items (<span id="count-items">0</span>)
+        </button>
+
+        <button
+            id="subtab-outfits-btn"
+            onclick="switchSubTab('outfits')"
+            class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
+            Outfits (<span id="count-outfits">0</span>)
+        </button>
+
+    </div>
+</div>
         <main class="p-4 md:p-6">
             
             <!-- SECTION 1: CLOSET (ตู้เสื้อผ้า) -->
             <section id="tab-closet" class="tab-content block">
                 <!-- Sub Navigation Switcher (Items / Outfits count) -->
-                <div class="flex p-1 bg-stone-200/70 rounded-2xl mb-4 max-w-xs mx-auto">
-                    <button id="subtab-items-btn" onclick="switchSubTab('items')" class="flex-1 py-1.5 text-xs font-semibold rounded-xl bg-white shadow-sm text-stone-900 transition">
-                        Items (<span id="count-items">0</span>)
-                    </button>
-                    <button id="subtab-outfits-btn" onclick="switchSubTab('outfits')" class="flex-1 py-1.5 text-xs font-semibold rounded-xl text-stone-600 transition">
-                        Outfits (<span id="count-outfits">0</span>)
-                    </button>
-                </div>
+           
 
                 <!-- SUB-TAB: ITEMS GRID -->
                 <div id="subtab-items" class="space-y-4">
