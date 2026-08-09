@@ -647,19 +647,59 @@ function doPost(e) {
             document.getElementById('image-placeholder-text').classList.remove('hidden');
         }
 
-        function previewImageFile(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    uploadedImageBase64 = evt.target.result;
-                    const preview = document.getElementById('image-preview');
-                    preview.src = uploadedImageBase64;
-                    preview.classList.remove('hidden');
-                    document.getElementById('image-placeholder-text').classList.add('hidden');
-                };
-                reader.readAsDataURL(file);
+    function previewImageFile(e) {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(evt) {
+        const img = new Image();
+
+        img.onload = function() {
+            const maxSize = 1200;
+
+            let width = img.width;
+            let height = img.height;
+
+            // ย่อรูปให้ด้านที่ยาวที่สุดไม่เกิน 1200px
+            if (width > maxSize || height > maxSize) {
+                if (width > height) {
+                    height = Math.round(height * maxSize / width);
+                    width = maxSize;
+                } else {
+                    width = Math.round(width * maxSize / height);
+                    height = maxSize;
+                }
             }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // บีบอัดเป็น JPEG
+            uploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.82);
+
+            const preview = document.getElementById('image-preview');
+
+            preview.src = uploadedImageBase64;
+            preview.classList.remove('hidden');
+
+            document
+                .getElementById('image-placeholder-text')
+                .classList.add('hidden');
+        };
+
+        img.src = evt.target.result;
+    };
+
+    reader.readAsDataURL(file);
+}
         }
 
        function handleAddItem(e) {
