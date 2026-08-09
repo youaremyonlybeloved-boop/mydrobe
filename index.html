@@ -746,7 +746,12 @@ function doPost(e) {
                 if (selectedId) {
                     const item = items.find(i => String(i.id) === String(selectedId));
                     if(item) {
-                        container.innerHTML = `<img src="${item.image}" class="w-full h-full object-contain p-1 rounded-lg" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">`;
+                        const imageUrl = (item.image || '').replace(
+    'https://drive.google.com/uc?export=view&id=',
+    'https://drive.google.com/thumbnail?id='
+);
+
+                        container.innerHTML = `<img src="${imageUrl}&sz=w1000" class="w-full h-full object-contain p-1 rounded-lg" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">`;
                         container.classList.remove('border-dashed');
                         container.classList.add('bg-white', 'shadow-sm');
                     }
@@ -993,12 +998,16 @@ async function loadItemsFromGoogle() {
 
         if (Array.isArray(data.items)) {
 
-            items = data.items;
+        items = data.items;
 
-            saveData();
+        saveData();
 
-            renderItems();
-            updateCounts();
+        renderItems();
+        populateMixerDropdowns();
+        updateMixerCanvas();
+        updateCounts();
+
+            
 
             showToast(
                 `☁️ โหลดเสื้อผ้าจาก Google สำเร็จ ${items.length} รายการ`
