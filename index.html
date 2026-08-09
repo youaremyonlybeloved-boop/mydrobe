@@ -841,8 +841,23 @@ function openItemDetail(itemId) {
     }
 }
 
-        async function deleteItem(id) {
-    // 1. ลบออกจากหน้าจอทันที
+async function deleteItem(id) {
+
+    // ถามก่อนลบ
+    const item = items.find(i => String(i.id) === String(id));
+
+    if (!item) return;
+
+    const confirmed = confirm(
+        `ต้องการลบ "${item.title || 'รายการนี้'}" ใช่หรือไม่?\n\nการลบแล้วจะไม่สามารถกู้คืนได้`
+    );
+
+    // กด ยกเลิก
+    if (!confirmed) {
+        return;
+    }
+
+    // 1. ลบออกจากหน้าจอ
     items = items.filter(i => String(i.id) !== String(id));
 
     saveData();
@@ -870,13 +885,17 @@ function openItemDetail(itemId) {
 
         } catch (error) {
             console.error('Delete Item Error:', error);
+
             showToast(
                 'ลบในเครื่องแล้ว แต่ลบจาก Google Sheets ไม่สำเร็จ',
                 'error'
             );
         }
     } else {
-        showToast('ลบในเครื่องแล้ว แต่ยังไม่ได้เชื่อม Google Sheets', 'warning');
+        showToast(
+            'ลบในเครื่องแล้ว แต่ยังไม่ได้เชื่อม Google Sheets',
+            'warning'
+        );
     }
 }
 
