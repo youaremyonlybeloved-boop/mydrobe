@@ -824,11 +824,20 @@ function doPost(e) {
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-3 relative";
                 
-                let itemThumbsHtml = outfitItems.map(item => `
-                    <div class="w-14 h-14 bg-[#F7F5F0] rounded-xl p-1 border border-stone-100 flex items-center justify-center">
-                        <img src="${item.image}" class="w-full h-full object-contain">
+                let itemThumbsHtml = outfitItems.map(item => {
+                const imageUrl = (item.image || '').replace(
+                'https://drive.google.com/uc?export=view&id=',
+                'https://drive.google.com/thumbnail?id='
+                );
+
+            return `
+            <div class="w-14 h-14 bg-[#F7F5F0] rounded-xl p-1 border border-stone-100 flex items-center justify-center">
+            <img src="${imageUrl}&sz=w500"
+                 class="w-full h-full object-contain"
+                 onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
                     </div>
-                `).join('');
+                `;
+            }).join('');
 
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
