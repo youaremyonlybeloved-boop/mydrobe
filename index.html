@@ -954,32 +954,244 @@
             }
         }
 
-        async function deleteItem(id) {
-            const item = items.find(i => String(i.id) === String(id));
-            if (!item || isSyncing) return;
+        // ==========================================
+// DELETE CONFIRM MODAL
+// ==========================================
 
-            const confirmed = confirm(`ต้องการลบ "${item.title || 'รายการนี้'}" ใช่หรือไม่?\n\nรายการจะถูกลบจากตู้เสื้อผ้า`);
-            if (!confirmed) return;
+function showDeleteConfirm(itemName) {
+    return new Promise((resolve) => {
 
-            isSyncing = true;
-            showToast('กำลังลบสินค้า...');
-            try {
-                const result = await postGoogleAction({ action: 'delete_item', id: String(id) });
-                if (!result || result.status !== 'success') {
-                    throw new Error(result?.message || 'ลบไม่สำเร็จ');
-                }
-                const detail = document.getElementById('item-detail-modal');
-                if (detail) detail.remove();
-                closeEditItemModal();
-                await loadItemsFromGoogle(false);
-                showToast('✅ ลบสินค้าเรียบร้อยแล้ว');
-            } catch (error) {
-                console.error('Delete Item Error:', error);
-                showToast('ลบสินค้าไม่สำเร็จ', 'error');
-            } finally {
-                isSyncing = false;
-            }
+        // ป้องกัน Modal ซ้ำ
+        const oldModal = document.getElementById('delete-confirm-modal');
+        if (oldModal) {
+            oldModal.remove();
         }
+
+        const modal = document.createElement('div');
+
+        modal.id = 'delete-confirm-modal';
+
+        modal.className =
+            'fixed inset-0 z-[10000] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4';
+
+        modal.innerHTML = `
+            <div
+                class="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden"
+                onclick="event.stopPropagation()"
+            >
+
+                <!-- Icon -->
+                <div class="flex justify-center pt-7">
+                    <div class="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center">
+                        <i class="fa-solid fa-trash-can text-rose-500 text-xl"></i>
+                    </div>
+                </div>
+
+                <!-- Text -->
+                <div class="px-6 pt-5 pb-4 text-center">
+
+                    <h3 class="text-lg font-bold text-stone-900 mb-2">
+                        ลบสินค้า
+                    </h3>
+
+                    <p class="text-sm text-stone-500">
+                        คุณแน่ใจหรือไม่ว่าต้องการลบ
+                    </p>
+
+                    <p class="text-base font-bold text-stone-800 mt-1 break-words">
+                        "${escapeHtml(itemName)}"
+                    </p>
+
+                    <p class="text-xs text-stone-400 mt-3">
+                        การลบสินค้านี้ไม่สามารถย้อนกลับได้
+                    </p>
+
+                </div>
+
+                <!-- Buttons -->
+                <div class="px-5 pb-5 pt-2 flex gap-2">
+
+                    <button
+                        id="delete-cancel-btn"
+                        type="button"
+                        class="flex-1 py-3 rounded-2xl bg-stone-100 text-stone-700 text-sm font-semibold hover:bg-stone-200 transition"
+                    >
+                        ยกเลิก
+                    </button>
+
+                    <button
+                        id="delete-confirm-btn"
+                        type="button"
+                        class="flex-1 py-3 rounded-2xl bg-rose-500 text-white text-sm font-semibold hover:bg-rose-600 transition shadow-sm"
+                    >
+                        ลบสินค้า
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // ------------------------------
+        // CANCEL
+        // ------------------------------
+
+        document
+            .getElementById('delete-cancel-btn')
+            .onclick = () => {
+
+                modal.remove();
+
+                resolve(false);
+            };
+
+
+        // ------------------------------
+        // CONFIRM DELETE
+        // ------------------------------
+
+        document
+            .getElementById('delete-confirm-btn')
+            .onclick = () => {
+
+                modal.remove();
+
+                resolve(true);
+            };
+
+
+        // ------------------------------
+        // CLICK OUTSIDE
+        // ------------------------------
+
+        modal.onclick = (event) => {
+
+            if (event.target === modal) {
+
+                modal.remove();
+
+                resolve(false);
+            }
+        };
+
+
+        // ------------------------------
+        // ESC KEY
+        // ------------------------------
+
+        const handleEscape = (event) => {
+
+            if (event.key === 'Escape') {
+
+                document.removeEventListener(
+                    'keydown',
+                    handleEscape
+                );
+
+                if (document.body.contains(modal)) {
+                    modal.remove();
+                }
+
+                resolve(false);
+            }
+        };
+
+        document.addEventListener(
+            'keydown',
+            handleEscape
+        );
+
+    });
+}
+
+
+// ==========================================
+// DELETE ITEM
+// ==========================================
+
+async function deleteItem(id) {
+
+    const item = items.find(
+        i => String(i.id) === String(id)
+    );
+
+    if (!item || isSyncing) return;
+
+
+    // เปิดหน้าต่างถามก่อนลบ
+    const confirmed = await showDeleteConfirm(
+        item.title || 'รายการนี้'
+    );
+
+
+    // ถ้ากดยกเลิก
+    if (!confirmed) return;
+
+
+    isSyncing = true;
+
+    showToast('กำลังลบสินค้า...');
+
+
+    try {
+
+        const result = await postGoogleAction({
+            action: 'delete_item',
+            id: String(id)
+        });
+
+
+        if (!result || result.status !== 'success') {
+
+            throw new Error(
+                result?.message || 'ลบไม่สำเร็จ'
+            );
+        }
+
+
+        // ปิดรายละเอียดสินค้า
+        const detail =
+            document.getElementById('item-detail-modal');
+
+        if (detail) {
+            detail.remove();
+        }
+
+
+        // ปิดหน้าแก้ไข ถ้ามี
+        closeEditItemModal();
+
+
+        // โหลดข้อมูลล่าสุดจาก Google
+        await loadItemsFromGoogle(false);
+
+
+        showToast(
+            '✅ ลบสินค้าเรียบร้อยแล้ว'
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            'Delete Item Error:',
+            error
+        );
+
+        showToast(
+            'ลบสินค้าไม่สำเร็จ',
+            'error'
+        );
+
+
+    } finally {
+
+        isSyncing = false;
+
+    }
+}
 
         async function toggleFavorite(id) {
             const item = items.find(i => String(i.id) === String(id));
@@ -1384,10 +1596,27 @@
                     }
                 }
 
-                if (Array.isArray(data.items)) items = data.items;
-                if (Array.isArray(data.outfits)) outfits = data.outfits;
+               // ==========================================
+// SAFE GOOGLE DATA SYNC
+// ==========================================
 
-                saveData();
+// รับข้อมูลสินค้าเฉพาะเมื่อ Google มีข้อมูลจริง
+if (
+    Array.isArray(data.items) &&
+    data.items.length > 0
+) {
+    items = data.items;
+}
+
+// รับข้อมูล Outfit เฉพาะเมื่อมีข้อมูลจริง
+if (
+    Array.isArray(data.outfits) &&
+    data.outfits.length > 0
+) {
+    outfits = data.outfits;
+}
+
+saveData();
                 renderAllItems();
                 renderItems();
                 renderOutfits();
