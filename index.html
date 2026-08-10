@@ -958,7 +958,7 @@
             const item = items.find(i => String(i.id) === String(id));
             if (!item || isSyncing) return;
 
-            const confirmed = confirm(`ต้องการลบ "${item.title || 'รายการนี้'}" ใช่หรือไม่?\n\nรายการจะถูกลบจาก Google Sheets และอุปกรณ์ทุกเครื่อง`);
+            const confirmed = confirm(`ต้องการลบ "${item.title || 'รายการนี้'}" ใช่หรือไม่?\n\nรายการจะถูกลบจากตู้เสื้อผ้า`);
             if (!confirmed) return;
 
             isSyncing = true;
