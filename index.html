@@ -3,18 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOLT Closet</title>
-    <!-- Tailwind CSS & FontAwesome -->
+    <title>My Closet - Wardrobe & Outfit Planner</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Plus Jakarta Sans & Playfair Display for visual aesthetic) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            bg: '#FAF7F2',
+                            card: '#FFFFFF',
+                            cardMuted: '#F3EFEA',
+                            dark: '#1C1917',
+                            accent: '#2D3748',
+                            tagCream: '#FEF3C7',
+                            tagBlue: '#DBEAFE',
+                            tagPink: '#FCE7F3',
+                            tagGreen: '#D1FAE5',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { background-color: #FAF7F2; color: #1C1917; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body {
+            background-color: #FAF7F2;
+            color: #1C1917;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
     </style>
 </head>
 <body class="min-h-screen pb-24 md:pb-6 antialiased">
@@ -24,111 +64,352 @@
         <!-- Header -->
         <header class="px-5 pt-6 pb-4 bg-[#FAF7F2] sticky top-0 z-20 border-b border-stone-200/50 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-stone-900">BOLT Closet</h1>
+                <h1 class="font-serif text-2xl md:text-3xl font-bold tracking-tight text-stone-900">BOLT Closet</h1>
                 <p class="text-xs md:text-sm text-stone-500 font-medium">จัดระเบียบเสื้อผ้าและวางแผนการแต่งตัว</p>
             </div>
-            <button onclick="openAddItemModal()" class="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-stone-900 text-white text-xs md:text-sm font-semibold shadow-md hover:bg-stone-800 transition active:scale-95">
-                <i class="fa-solid fa-plus"></i>
-                <span>Add Item</span>
-            </button>
+            <div class="flex items-center gap-2">
+                <button onclick="openAddItemModal()" class="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-stone-900 text-white text-xs md:text-sm font-semibold shadow-md hover:bg-stone-800 transition active:scale-95">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add Item</span>
+                </button>
+            </div>
         </header>
 
-        <!-- Sub Tabs -->
+        <!-- GLOBAL ALL / ITEMS / OUTFITS SWITCH -->
         <div class="px-5 pt-4 pb-2 bg-[#FAF7F2]">
             <div class="flex bg-stone-200/70 rounded-2xl p-1 gap-1">
-                <button id="subtab-all-btn" onclick="switchSubTab('all')" class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-white shadow-sm text-stone-900 transition">ALL</button>
-                <button id="subtab-items-btn" onclick="switchSubTab('items')" class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">Items (<span id="count-items">0</span>)</button>
-                <button id="subtab-outfits-btn" onclick="switchSubTab('outfits')" class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">Outfits (<span id="count-outfits">0</span>)</button>
+              
+
+                <!-- โค้ดใหม่ (ย้าย bg-white shadow-sm text-stone-900 ไปที่ปุ่ม ALL) -->
+<button id="subtab-all-btn" onclick="switchSubTab('all')" class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-white shadow-sm text-stone-900 transition">
+    ALL
+</button>
+<button id="subtab-items-btn" onclick="switchSubTab('items')" class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
+    Items (<span id="count-items">0</span>)
+</button>
+
+                <button
+                    id="subtab-outfits-btn"
+                    onclick="switchSubTab('outfits')"
+                    class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-stone-600 transition">
+                    Outfits (<span id="count-outfits">0</span>)
+                </button>
             </div>
         </div>
 
         <main class="p-4 md:p-6">
+            
+            <!-- SECTION 1: CLOSET (ตู้เสื้อผ้า) -->
             <section id="tab-closet" class="tab-content block">
-                <!-- SUB-TAB: ALL GRID -->
+
+                <!-- SUB-TAB: ALL GRID (เน้นแสดงเฉพาะรูปในตารางเหมือนภาพตัวอย่าง 3) -->
                 <div id="subtab-all" class="space-y-4">
-                    <div id="all-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"></div>
+                    <div id="all-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                        <!-- Dynamic Minimal Items loaded via JS -->
+                    </div>
                 </div>
 
                 <!-- SUB-TAB: ITEMS GRID -->
                 <div id="subtab-items" class="hidden space-y-4">
+                    <!-- Filters & Category Chips -->
                     <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
-                        <button onclick="filterCategory('all')" class="cat-chip active px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-stone-900 text-white">ทั้งหมด</button>
-                        <button onclick="filterCategory('tshirt')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200">👕 เสื้อ</button>
-                        <button onclick="filterCategory('shirt')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200">👔 เสื้อเชิ้ต</button>
-                        <button onclick="filterCategory('jacket')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200">🧥 แจ็คเก็ต</button>
-                        <button onclick="filterCategory('pants')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200">👖 กางเกง</button>
-                        <button onclick="filterCategory('shoes')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200">👟 รองเท้า</button>
+                        <button onclick="filterCategory('all')" class="cat-chip active px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-stone-900 text-white transition">
+                            ทั้งหมด
+                        </button>
+                        <button onclick="filterCategory('tshirt')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
+                            👕 เสื้อ
+                        </button>
+                        <button onclick="filterCategory('shirt')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
+                            👔 เสื้อเชิ้ต
+                        </button>
+                        <button onclick="filterCategory('jacket')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
+                            🧥 แจ็คเก็ต
+                        </button>
+                        <button onclick="filterCategory('pants')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
+                            👖 กางเกง
+                        </button>
+                        <button onclick="filterCategory('glasses')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
+                            🕶️ แว่นตา
+                        </button>
+                        <button onclick="filterCategory('shoes')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
+                            👟 รองเท้า
+                        </button>
                     </div>
 
+                    <!-- Search Input -->
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-stone-400 text-sm"></i>
-                        <input type="text" id="search-input" oninput="renderItems()" placeholder="ค้นหาเสื้อผ้า, แบรนด์, สี..." class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-stone-200 text-xs md:text-sm focus:outline-none">
+                        <input type="text" id="search-input" oninput="renderItems()" placeholder="ค้นหาเสื้อผ้า, แบรนด์, สี..." class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-stone-200 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-stone-400">
                     </div>
 
-                    <div id="items-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3.5 md:gap-4"></div>
+                    <!-- Items Grid -->
+                    <div id="items-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3.5 md:gap-4">
+                        <!-- Dynamic items loaded via JS -->
+                    </div>
                 </div>
 
-                <!-- SUB-TAB: SAVED OUTFITS -->
+                <!-- SUB-TAB: SAVED OUTFITS LIST -->
                 <div id="subtab-outfits" class="hidden space-y-4">
-                    <div id="outfits-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <div id="outfits-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Dynamic outfits loaded via JS -->
+                    </div>
                 </div>
             </section>
+
+            <!-- SECTION 2: MIX & MATCH (จัดชุด Outfit Builder) -->
+            <section id="tab-mix" class="tab-content hidden">
+                <div class="bg-white rounded-3xl p-4 md:p-6 shadow-sm border border-stone-200 space-y-5">
+                    <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+                        <div>
+                            <h2 class="font-serif text-lg font-bold text-stone-800">Outfit Canvas</h2>
+                            <p class="text-xs text-stone-500">เลือกเสื้อผ้าในแต่ละส่วนเพื่อ Mix & Match ชุดตามสไตล์</p>
+                        </div>
+                        <button onclick="resetMixerCanvas()" class="text-xs text-stone-500 hover:text-stone-800 underline">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> ล้างกระดาน
+                        </button>
+                    </div>
+
+                    <!-- Visual Mix Canvas Board -->
+                    <div class="relative w-full bg-[#F5F2EC] rounded-2xl p-4 min-h-[360px] flex flex-col justify-between items-center overflow-hidden border border-stone-200">
+                        <div class="w-full flex justify-between items-center z-10 px-2">
+                            <div id="canvas-glasses" class="w-20 h-20 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative group">
+                                <span class="text-stone-300 text-xs">แว่นตา</span>
+                            </div>
+                            <div id="canvas-jacket" class="w-24 h-24 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative group">
+                                <span class="text-stone-300 text-xs">แจ็คเก็ต</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center gap-2 my-2 z-10">
+                            <div id="canvas-shirt" class="w-32 h-32 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative">
+                                <span class="text-stone-300 text-xs">เสื้อยืด / เชิ้ต</span>
+                            </div>
+                            <div id="canvas-pants" class="w-36 h-36 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative">
+                                <span class="text-stone-300 text-xs">กางเกง</span>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex justify-center z-10">
+                            <div id="canvas-shoes" class="w-28 h-20 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative">
+                                <span class="text-stone-300 text-xs">รองเท้า</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item Selector Controls -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-bold text-stone-700 uppercase tracking-wider">เลือกชิ้นส่วนใส่ในชุด</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            <div>
+                                <label class="text-[11px] font-medium text-stone-500 mb-1 block">1. แว่นตา / แอคเซสเซอรี</label>
+                                <select id="select-glasses" onchange="updateMixerCanvas()" class="w-full p-2 text-xs rounded-xl border border-stone-200 bg-stone-50">
+                                    <option value="">-- เลือก --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-medium text-stone-500 mb-1 block">2. เสื้อตัวใน (ยืด/เชิ้ต)</label>
+                                <select id="select-shirt" onchange="updateMixerCanvas()" class="w-full p-2 text-xs rounded-xl border border-stone-200 bg-stone-50">
+                                    <option value="">-- เลือก --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-medium text-stone-500 mb-1 block">3. แจ็คเก็ต / คาร์ดิแกน</label>
+                                <select id="select-jacket" onchange="updateMixerCanvas()" class="w-full p-2 text-xs rounded-xl border border-stone-200 bg-stone-50">
+                                    <option value="">-- เลือก --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-medium text-stone-500 mb-1 block">4. กางเกง / กระโปรง</label>
+                                <select id="select-pants" onchange="updateMixerCanvas()" class="w-full p-2 text-xs rounded-xl border border-stone-200 bg-stone-50">
+                                    <option value="">-- เลือก --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-medium text-stone-500 mb-1 block">5. รองเท้า</label>
+                                <select id="select-shoes" onchange="updateMixerCanvas()" class="w-full p-2 text-xs rounded-xl border border-stone-200 bg-stone-50">
+                                    <option value="">-- เลือก --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-medium text-stone-500 mb-1 block">โอกาส (Occasion)</label>
+                                <select id="select-occasion" class="w-full p-2 text-xs rounded-xl border border-stone-200 bg-stone-50">
+                                    <option value="Casual">Casual </option>
+                                    <option value="Work">Work </option>
+                                    <option value="Dinner">Dinner </option>
+                                    <option value="Travel">Travel </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 pt-2">
+                            <input type="text" id="outfit-name-input" placeholder="ตั้งชื่อลุคนี้ (เช่น Minimal Office, Saturday Chill)..." class="flex-1 p-2.5 rounded-xl border border-stone-200 text-xs focus:outline-none focus:ring-2 focus:ring-stone-400">
+                            <button onclick="saveOutfit()" class="px-5 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold shadow hover:bg-stone-800 transition">
+                                บันทึกชุดนี้
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: CALENDAR PLANNER (ตารางแต่งตัว) -->
+            <section id="tab-calendar" class="tab-content hidden">
+                <div class="bg-white rounded-3xl p-4 md:p-6 shadow-sm border border-stone-200 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="font-serif text-lg font-bold text-stone-800">Outfit Calendar</h2>
+                        <span class="text-xs px-2.5 py-1 bg-stone-100 font-semibold rounded-full text-stone-600">สิงหาคม 2026</span>
+                    </div>
+
+                    <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-stone-400 pb-1">
+                        <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
+                    </div>
+                    <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5">
+                        <!-- Dynamic Calendar Days loaded via JS -->
+                    </div>
+
+                    <div id="calendar-detail-card" class="mt-4 p-4 bg-stone-50 rounded-2xl border border-stone-200/70 hidden">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 id="cal-selected-date-text" class="text-xs font-bold text-stone-800">แผนแต่งตัวประจำวัน</h3>
+                            <button onclick="closeCalDetail()" class="text-stone-400 hover:text-stone-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div id="cal-outfit-preview" class="flex items-center gap-3">
+                            <!-- Preview attached outfit -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: SETTINGS & GOOGLE SYNC -->
+            <section id="tab-settings" class="tab-content hidden">
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-stone-200 space-y-4">
+                    <div class="flex items-center gap-3 border-b border-stone-100 pb-3">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-serif text-base font-bold text-stone-800">Google Sheets & Drive Sync</h2>
+                            <p class="text-xs text-stone-500">ซิงก์ข้อมูลรูปภาพและเสื้อผ้าลงในกูเกิลไดรฟ์ของคุณ</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs font-semibold text-stone-700 mb-1 block">Google Apps Script Web App URL</label>
+                            <input type="text" id="google-script-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs font-mono focus:ring-2 focus:ring-stone-400">
+                            <p class="text-[11px] text-stone-400 mt-1">นำ URL ที่ได้จากการ Deploy Google Apps Script มาวางตรงนี้</p>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="saveGoogleConfig()" class="flex-1 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition">
+                                บันทึก URL
+                            </button>
+                            <button onclick="syncDataToGoogle()" class="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-700 transition">
+                                <i class="fa-solid fa-rotate mr-1"></i> Sync ข้อมูลทันที
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-stone-50 rounded-2xl p-4 text-xs space-y-2 border border-stone-200">
+                        <h4 class="font-bold text-stone-800 flex items-center justify-between cursor-pointer" onclick="toggleScriptGuide()">
+                            <span>วิธีสร้าง Google Apps Script (คลิกเพื่อดู)</span>
+                            <i class="fa-solid fa-chevron-down text-stone-400"></i>
+                        </h4>
+                        <div id="script-guide-content" class="hidden space-y-2 text-stone-600 pt-2 border-t border-stone-200/60">
+                            <ol class="list-decimal list-inside space-y-1">
+                                <li>สร้าง Google Sheet ใหม่ แล้วไปที่เมนู <strong>ส่วนขยาย (Extensions) > Apps Script</strong></li>
+                                <li>วางโค้ด Code.gs ที่ให้มาแทนที่ทั้งหมด แล้วกดบันทึก</li>
+                                <li>กด <strong>Deploy > New deployment</strong> เลือกประเภทเป็น <em>Web app</em></li>
+                                <li>ตั้งค่า Execute as: <strong>Me</strong> และ Who has access: <strong>Anyone</strong> แล้วกด Deploy</li>
+                                <li>คัดลอก Web App URL มาใส่ในช่องด้านบน</li>
+                            </ol>
+                            <div class="relative">
+                                <pre class="bg-stone-900 text-stone-200 p-3 rounded-xl text-[10px] overflow-x-auto max-h-40 font-mono" id="gas-code-block">นำ Code.gs ที่ให้มาวางทั้งไฟล์ ไม่ต้องตัดหรือเติมโค้ดเอง</pre>
+                                <button onclick="copyGasCode()" class="absolute top-2 right-2 px-2 py-1 bg-white/20 text-white rounded text-[10px] hover:bg-white/30">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </main>
 
-        <!-- ADD/EDIT ITEM MODAL -->
+        <nav class="fixed md:sticky bottom-0 left-0 right-0 max-w-md md:max-w-4xl mx-auto bg-white/90 backdrop-blur-md border-t border-stone-200/80 px-6 py-2.5 z-30 flex justify-between items-center">
+            <button onclick="switchTab('closet')" id="nav-closet" class="nav-btn flex flex-col items-center gap-1 text-stone-900 transition">
+                <i class="fa-solid fa-shirt text-lg"></i>
+                <span class="text-[10px] font-semibold">Closet</span>
+            </button>
+            <button onclick="switchTab('mix')" id="nav-mix" class="nav-btn flex flex-col items-center gap-1 text-stone-400 hover:text-stone-700 transition">
+                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                <span class="text-[10px] font-semibold">Mix & Match</span>
+            </button>
+            <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn flex flex-col items-center gap-1 text-stone-400 hover:text-stone-700 transition">
+                <i class="fa-regular fa-calendar-days text-lg"></i>
+                <span class="text-[10px] font-semibold">Calendar</span>
+            </button>
+            <button onclick="switchTab('settings')" id="nav-settings" class="hidden nav-btn flex flex-col items-center gap-1 text-stone-400 hover:text-stone-900 transition">
+                <i class="fa-solid fa-cloud text-lg"></i>
+                <span class="text-[10px] font-semibold">Google Sync</span>
+            </button>
+        </nav>
+
+        <!-- ADD ITEM MODAL -->
         <div id="add-item-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 hidden">
-            <div class="bg-white w-full max-w-md rounded-t-3xl md:rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div class="bg-white w-full max-w-md rounded-t-3xl md:rounded-3xl p-6 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-200">
                 <div class="flex justify-between items-center border-b border-stone-100 pb-3">
-                    <h3 id="modal-title-text" class="text-lg font-bold text-stone-800">เพิ่มเสื้อผ้าใหม่</h3>
-                    <button onclick="closeAddItemModal()" class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                    <h3 class="font-serif text-lg font-bold text-stone-800">เพิ่มเสื้อผ้าใหม่</h3>
+                    <button onclick="closeAddItemModal()" class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-stone-500 hover:bg-stone-200">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
-                <form id="add-item-form" onsubmit="handleSaveItem(event)" class="space-y-3">
-                    <input type="hidden" id="edit-item-id">
+                <form id="add-item-form" onsubmit="handleAddItem(event)" class="space-y-3">
                     <div>
                         <label class="text-xs font-semibold text-stone-700 mb-1 block">ชื่อรายการเสื้อผ้า *</label>
-                        <input type="text" id="item-title" required placeholder="เช่น เสื้อโปโล, เสื้อเชิ้ต..." class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
+                        <input type="text" id="item-title" required placeholder="เช่น เสื้อเชิ้ตลายจุด, กางเกงยีนส์เอวสูง..." class="w-full p-2.5 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-stone-400">
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="text-xs font-semibold text-stone-700 mb-1 block">หมวดหมู่ *</label>
-                            <select id="item-category" required class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
-                                <option value="tshirt">👕 เสื้อยืด/โปโล (T-shirt)</option>
+                            <select id="item-category" required class="w-full p-2.5 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-stone-400">
+                                <option value="tshirt">👕 เสื้อ (T-Shirt)</option>
                                 <option value="shirt">👔 เสื้อเชิ้ต (Shirt)</option>
                                 <option value="jacket">🧥 แจ็คเก็ต (Jacket)</option>
-                                <option value="pants">👖 กางเกง (Pants)</option>
-                                <option value="glasses">🕶️ แว่นตา (Glasses)</option>
-                                <option value="shoes">👟 รองเท้า (Shoes)</option>
+                                <option value="pants">👖 กางเกง/กระโปรง</option>
+                                <option value="glasses">🕶️ แว่นตา/แอคเซสเซอรี</option>
+                                <option value="shoes">👟 รองเท้า</option>
                             </select>
                         </div>
                         <div>
                             <label class="text-xs font-semibold text-stone-700 mb-1 block">แบรนด์</label>
-                            <input type="text" id="item-brand" placeholder="เช่น ZARA, Uniqlo" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
+                            <input type="text" id="item-brand" placeholder="เช่น ZARA, Uniqlo" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-stone-400">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="text-xs font-semibold text-stone-700 mb-1 block">โทนสี</label>
-                            <input type="text" id="item-color" placeholder="เช่น น้ำตาล, Cream" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
+                            <input type="text" id="item-color" placeholder="เช่น Cream, Light Blue" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-stone-400">
                         </div>
                         <div>
-                            <label class="text-xs font-semibold text-stone-700 mb-1 block">รูปภาพ</label>
-                            <input type="file" id="item-file" accept="image/*" onchange="previewImageFile(event)" class="text-[10px] text-stone-500">
+                            <label class="text-xs font-semibold text-stone-700 mb-1 block">รูปภาพ (File หรือ URL)</label>
+                            <input type="file" id="item-file" accept="image/*" onchange="previewImageFile(event)" class="text-[10px] text-stone-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-stone-100 file:text-stone-700">
                         </div>
                     </div>
 
-                    <div id="image-preview-container" class="w-full h-28 rounded-xl border border-dashed border-stone-300 bg-stone-50 flex items-center justify-center overflow-hidden">
+                    <div id="image-preview-container" class="w-full h-28 rounded-xl border border-dashed border-stone-300 bg-stone-50 flex items-center justify-center overflow-hidden relative">
                         <img id="image-preview" src="" class="w-full h-full object-contain hidden">
                         <span id="image-placeholder-text" class="text-stone-400 text-xs"><i class="fa-regular fa-image mr-1"></i> ตัวอย่างรูปภาพ</span>
                     </div>
 
                     <div class="pt-2 flex gap-2">
-                        <button type="button" onclick="closeAddItemModal()" class="flex-1 py-2.5 bg-stone-100 text-stone-700 rounded-xl text-xs font-semibold">ยกเลิก</button>
-                        <button type="submit" class="flex-1 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold">บันทึกข้อมูล</button>
+                        <button type="button" onclick="closeAddItemModal()" class="flex-1 py-2.5 bg-stone-100 text-stone-700 rounded-xl text-xs font-semibold hover:bg-stone-200 transition">
+                            ยกเลิก
+                        </button>
+                        <button type="submit" class="flex-1 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition">
+                            บันทึกเสื้อผ้า
+                        </button>
                     </div>
                 </form>
             </div>
@@ -139,25 +420,112 @@
             <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
             <span id="toast-message">แจ้งเตือน</span>
         </div>
+
     </div>
 
     <script>
-        let items = JSON.parse(localStorage.getItem('my_closet_items')) || [];
-        let outfits = JSON.parse(localStorage.getItem('my_closet_outfits')) || [];
-        let activeCategory = 'all';
-        let uploadedImageBase64 = '';
-        
-        // ** ใส่ URL ของ Web App Google Apps Script ที่ได้จากการ Deploy ที่นี่ **
-        let googleScriptUrl = 'https://script.google.com/macros/s/AKfycbxhEaVTs6it5yfm7Bcz8-jkhkUxBIHKqNkKWCF_gNUtXl7bsTipO8EkrS1ZlNPDPBPy/exec';
+        const initialItems = [
+            {
+                id: '1',
+                title: 'Polka Dot Blouse with Bow',
+                category: 'shirt',
+                brand: 'ZARA',
+                color: 'Cream',
+                image: 'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=500&auto=format&fit=crop&q=80',
+                favorite: true
+            },
+            {
+                id: '2',
+                title: 'High-rise Wide-leg Jeans',
+                category: 'pants',
+                brand: 'Abercrombie & Fitch',
+                color: 'Light Blue',
+                image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&auto=format&fit=crop&q=80',
+                favorite: false
+            },
+            {
+                id: '3',
+                title: 'Classic Oversized Denim Jacket',
+                category: 'jacket',
+                brand: 'Levi\'s',
+                color: 'Medium Wash',
+                image: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500&auto=format&fit=crop&q=80',
+                favorite: true
+            },
+            {
+                id: '4',
+                title: 'Retro Dark Sunglasses',
+                category: 'glasses',
+                brand: 'Ray-Ban',
+                color: 'Black',
+                image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500&auto=format&fit=crop&q=80',
+                favorite: false
+            },
+            {
+                id: '5',
+                title: 'Essential Crew Neck T-Shirt',
+                category: 'tshirt',
+                brand: 'Uniqlo',
+                color: 'White',
+                image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=80',
+                favorite: false
+            },
+            {
+                id: '6',
+                title: 'White Canvas Low Sneakers',
+                category: 'shoes',
+                brand: 'Converse',
+                color: 'White',
+                image: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=500&auto=format&fit=crop&q=80',
+                favorite: true
+            }
+        ];
 
+        // State variables
+        let items = JSON.parse(localStorage.getItem('my_closet_items')) || initialItems;
+        let outfits = JSON.parse(localStorage.getItem('my_closet_outfits')) || [];
+        let calendarPlan = JSON.parse(localStorage.getItem('my_closet_calendar')) || {};
+        let activeCategory = 'all';
+        // โค้ดใหม่
+        let activeSubTab = 'all';
+        let uploadedImageBase64 = '';
+        const DEFAULT_GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxhEaVTs6it5yfm7Bcz8-jkhkUxBIHKqNkKWCF_gNUtXl7bsTipO8EkrS1ZlNPDPBPy/exec';
+        let googleScriptUrl = localStorage.getItem('google_script_url') || DEFAULT_GOOGLE_SCRIPT_URL;
+        let isSyncing = false;
+
+        // Initialize App on Load
         window.onload = function() {
             renderAllItems();
             renderItems();
+            renderOutfits();
+            populateMixerDropdowns();
+            renderCalendar();
             updateCounts();
-            loadItemsFromGoogle();
+            if(googleScriptUrl) {
+                document.getElementById('google-script-url').value = googleScriptUrl;
+            }
+            loadItemsFromGoogle(true).catch(() => {});
         };
 
+        // --- NAVIGATION & TABS ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-stone-900');
+                btn.classList.add('text-stone-400');
+            });
+            document.getElementById('nav-' + tabId).classList.add('text-stone-900');
+            document.getElementById('nav-' + tabId).classList.remove('text-stone-400');
+
+            if(tabId === 'mix') populateMixerDropdowns();
+            if(tabId === 'calendar') renderCalendar();
+        }
+
         function switchSubTab(sub) {
+            switchTab('closet');
+            activeSubTab = sub;
             const allBtn = document.getElementById('subtab-all-btn');
             const itemsBtn = document.getElementById('subtab-items-btn');
             const outfitsBtn = document.getElementById('subtab-outfits-btn');
@@ -166,28 +534,45 @@
             const itemsDiv = document.getElementById('subtab-items');
             const outfitsDiv = document.getElementById('subtab-outfits');
 
-            [allBtn, itemsBtn, outfitsBtn].forEach(btn => btn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900'));
-            [allDiv, itemsDiv, outfitsDiv].forEach(div => div.classList.add('hidden'));
+            // Reset buttons state
+            [allBtn, itemsBtn, outfitsBtn].forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-stone-900');
+                btn.classList.add('text-stone-600');
+            });
+
+            // Reset divs
+            allDiv.classList.add('hidden');
+            itemsDiv.classList.add('hidden');
+            outfitsDiv.classList.add('hidden');
 
             if (sub === 'all') {
                 allBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
+                allBtn.classList.remove('text-stone-600');
                 allDiv.classList.remove('hidden');
                 renderAllItems();
             } else if (sub === 'items') {
                 itemsBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
+                itemsBtn.classList.remove('text-stone-600');
                 itemsDiv.classList.remove('hidden');
-                renderItems();
             } else {
                 outfitsBtn.classList.add('bg-white', 'shadow-sm', 'text-stone-900');
+                outfitsBtn.classList.remove('text-stone-600');
                 outfitsDiv.classList.remove('hidden');
             }
         }
 
+        // --- RENDER ALL TAB (IMAGE-ONLY GRID LIKE IMAGE 3) ---
         function renderAllItems() {
             const grid = document.getElementById('all-grid');
             grid.innerHTML = '';
+
             if(items.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-10 text-center text-stone-400"><p class="text-xs">ไม่มีรายการเสื้อผ้า</p></div>`;
+                grid.innerHTML = `
+                    <div class="col-span-full py-10 text-center text-stone-400">
+                        <i class="fa-solid fa-shirt text-3xl mb-2 opacity-50"></i>
+                        <p class="text-xs">ไม่มีรายการเสื้อผ้า</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -196,10 +581,25 @@
                 card.className = "bg-[#EFECE6] rounded-2xl p-2 h-48 md:h-56 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-md transition border border-stone-200/40";
                 card.onclick = () => openItemDetail(item.id);
 
-                const imageUrl = item.image ? item.image.replace('https://drive.google.com/uc?export=view&id=', 'https://drive.google.com/thumbnail?id=') + '&sz=w1000' : '';
-                card.innerHTML = `<img src="${imageUrl}" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">`;
+                const imageUrl = toImageUrl(item.image, 1000);
+
+                card.innerHTML = `
+                    <img src="${imageUrl}" alt="${item.title}" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
+                `;
                 grid.appendChild(card);
             });
+        }
+
+        // --- RENDER ITEMS ---
+        function filterCategory(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.cat-chip').forEach(btn => {
+                btn.classList.remove('bg-stone-900', 'text-white');
+                btn.classList.add('bg-white', 'text-stone-600');
+            });
+            event.target.classList.add('bg-stone-900', 'text-white');
+            event.target.classList.remove('bg-white', 'text-stone-600');
+            renderItems();
         }
 
         function renderItems() {
@@ -209,84 +609,91 @@
 
             const filtered = items.filter(item => {
                 const matchCat = activeCategory === 'all' || item.category === activeCategory;
-                const matchSearch = (item.title||'').toLowerCase().includes(searchQuery) || (item.brand||'').toLowerCase().includes(searchQuery);
+                const matchSearch = item.title.toLowerCase().includes(searchQuery) || 
+                                    item.brand.toLowerCase().includes(searchQuery) ||
+                                    item.color.toLowerCase().includes(searchQuery);
                 return matchCat && matchSearch;
             });
 
+            if(filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-10 text-center text-stone-400">
+                        <i class="fa-solid fa-shirt text-3xl mb-2 opacity-50"></i>
+                        <p class="text-xs">ไม่พบรายการเสื้อผ้าที่คุณค้นหา</p>
+                    </div>
+                `;
+                return;
+            }
+
             filtered.forEach(item => {
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl p-2.5 shadow-sm border border-stone-200/80 flex flex-col justify-between relative group hover:shadow-md transition cursor-pointer";
-                card.onclick = () => openItemDetail(item.id);
-                
-                const imageUrl = item.image ? item.image.replace('https://drive.google.com/uc?export=view&id=', 'https://drive.google.com/thumbnail?id=') + '&sz=w1000' : '';
+                card.className = "bg-white rounded-2xl p-2.5 shadow-sm border border-stone-200/80 flex flex-col justify-between relative group hover:shadow-md transition";
                 card.innerHTML = `
-                    <div class="w-full h-36 rounded-xl bg-[#F7F5F0] overflow-hidden mb-2 flex items-center justify-center">
-                        <img src="${imageUrl}" class="w-full h-full object-contain p-2 hover:scale-105 transition" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
+                    <button onclick="toggleFavorite('${item.id}')" class="absolute top-4 right-4 z-50 w-7 h-7 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-stone-400 hover:text-rose-500 shadow-sm transition">
+                        <i class="${item.favorite ? 'fa-solid fa-heart text-rose-500' : 'fa-regular fa-heart'} text-xs"></i>
+                    </button>
+                    <button onclick="deleteItem('${item.id}')" class="absolute top-4 left-4 z-10 w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-sm transition">
+                        <i class="fa-solid fa-trash-can text-[10px]"></i>
+                    </button>
+                    
+                    <div onclick="openItemDetail('${item.id}')" class="w-full h-36 rounded-xl bg-[#F7F5F0] overflow-hidden mb-2 flex items-center justify-center cursor-pointer">
+                        <img src="${toImageUrl(item.image, 1000)}" alt="${escapeHtml(item.title)}" class="w-full h-full object-contain p-2 hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
                     </div>
-                    <div>
+
+                    <div class="space-y-1">
                         <h4 class="text-xs font-bold text-stone-800 line-clamp-1">${item.title}</h4>
-                        <p class="text-[11px] text-stone-400">${item.brand || 'unknow'}</p>
+                        <p class="text-xs font-bold text-stone-800">
+                            <span class="text-stone-400">Brand:</span> ${item.brand || 'Unbranded'}
+                        </p>
+                        <p class="text-xs font-bold text-stone-800">
+                            <span class="text-stone-400">Color:</span> ${item.color || 'Custom'}
+                        </p>
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // Modal รายละเอียดสินค้า (รวมปุ่มแก้ไข + ปุ่มลบ + ปุ่ม X)
         function openItemDetail(itemId) {
             const item = items.find(i => String(i.id) === String(itemId));
             if (!item) return;
 
-            const imageUrl = item.image ? item.image.replace('https://drive.google.com/uc?export=view&id=', 'https://drive.google.com/thumbnail?id=') + '&sz=w2000' : '';
-
+            const imageUrl = toImageUrl(item.image, 2000);
             const modal = document.createElement('div');
             modal.id = 'item-detail-modal';
-            modal.className = 'fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4';
+            modal.className = 'fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4';
             modal.innerHTML = `
-                <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
-                    <!-- ปุ่ม X ปิดมุมบนขวา -->
-                    <button onclick="document.getElementById('item-detail-modal').remove()" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-stone-500 hover:bg-stone-200 text-sm">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-
-                    <div class="p-4">
-                        <!-- กรอบรูปภาพ -->
-                        <div class="w-full h-72 rounded-2xl bg-[#F7F5F0] flex items-center justify-center overflow-hidden mb-4 relative">
-                            ${imageUrl ? `<img src="${imageUrl}" class="w-full h-full object-contain p-2" alt="${item.title}">` : `<div class="text-stone-400">ไม่มีรูปภาพ</div>`}
+                <div class="bg-white rounded-3xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl">
+                    <div class="flex justify-between items-center px-5 pt-4 pb-2">
+                        <h3 class="text-sm font-bold text-stone-800">รายละเอียดสินค้า</h3>
+                        <button onclick="document.getElementById('item-detail-modal').remove()" class="w-10 h-10 rounded-full bg-stone-100 text-stone-600 text-xl">×</button>
+                    </div>
+                    <div class="px-5 pb-5">
+                        <div class="w-full h-[420px] rounded-2xl bg-[#F7F5F0] flex items-center justify-center overflow-hidden mb-5">
+                            ${imageUrl ? `<img src="${imageUrl}" class="w-full h-full object-contain" alt="${escapeHtml(item.title || 'เสื้อผ้า')}">` : `<div class="text-stone-400">ไม่มีรูปภาพ</div>`}
                         </div>
-
-                        <!-- ส่วนหัว + ปุ่มลบ & ดินสอ -->
-                        <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-start justify-between gap-3 mb-4">
                             <div>
-                                <h2 class="text-xl font-bold text-stone-900 leading-tight">${item.title || 'ไม่มีชื่อ'}</h2>
-                                <p class="text-xs text-stone-400 mt-0.5">${item.brand || 'unknow'}</p>
+                                <h2 class="text-2xl font-bold text-stone-900">${escapeHtml(item.title || 'ไม่มีชื่อ')}</h2>
+                                <p class="text-stone-500 mt-1">${escapeHtml(item.brand || 'ไม่ระบุแบรนด์')}</p>
                             </div>
-
-                            <div class="flex items-center gap-2">
-                                <!-- ปุ่มลบ (ถังขยะ) -->
-                                <button onclick="deleteItem('${item.id}')" title="ลบสินค้า" class="w-9 h-9 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center transition shadow-sm">
-                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                            <div class="flex gap-2">
+                                <button onclick="openEditItemModal('${String(item.id)}')" class="w-11 h-11 rounded-full bg-stone-900 text-white flex items-center justify-center shadow">
+                                    <i class="fa-solid fa-pen text-sm"></i>
                                 </button>
-                                <!-- ปุ่มดินสอ (แก้ไข) -->
-                                <button onclick="openEditItemModal('${item.id}')" title="แก้ไขสินค้า" class="w-9 h-9 rounded-full bg-stone-900 hover:bg-stone-800 text-white flex items-center justify-center transition shadow-sm">
-                                    <i class="fa-solid fa-pencil text-xs"></i>
+                                <button onclick="deleteItem('${String(item.id)}')" class="w-11 h-11 rounded-full bg-rose-500 text-white flex items-center justify-center shadow">
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
                                 </button>
                             </div>
                         </div>
-
-                        <!-- ตารางรายละเอียด -->
-                        <div class="space-y-2 text-xs border-t border-stone-100 pt-3">
-                            <div class="flex justify-between py-1 border-b border-stone-50">
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between border-b pb-3">
                                 <span class="text-stone-400">หมวดหมู่</span>
-                                <span class="font-semibold text-stone-800">${item.category || '-'}</span>
+                                <span class="font-medium text-stone-800">${escapeHtml(item.category || '-')}</span>
                             </div>
-                            <div class="flex justify-between py-1 border-b border-stone-50">
+                            <div class="flex justify-between border-b pb-3">
                                 <span class="text-stone-400">โทนสี</span>
-                                <span class="font-semibold text-stone-800">${item.color || '-'}</span>
-                            </div>
-                            <div class="flex justify-between py-1">
-                                <span class="text-stone-400">แบรนด์</span>
-                                <span class="font-semibold text-stone-800">${item.brand || 'unknow'}</span>
+                                <span class="font-medium text-stone-800">${escapeHtml(item.color || '-')}</span>
                             </div>
                         </div>
                     </div>
@@ -299,183 +706,651 @@
             });
         }
 
-        // เปิด Modal เมื่อกดดินสอแก้ไข
-        function openEditItemModal(itemId) {
-            const item = items.find(i => String(i.id) === String(itemId));
-            if (!item) return;
-
-            // ปิด Modal รายละเอียดเดิม
-            const detailModal = document.getElementById('item-detail-modal');
-            if (detailModal) detailModal.remove();
-
-            document.getElementById('modal-title-text').innerText = "แก้ไขเสื้อผ้า";
-            document.getElementById('edit-item-id').value = item.id;
-            document.getElementById('item-title').value = item.title || '';
-            document.getElementById('item-category').value = item.category || 'tshirt';
-            document.getElementById('item-brand').value = item.brand || '';
-            document.getElementById('item-color').value = item.color || '';
-
-            if (item.image) {
-                const preview = document.getElementById('image-preview');
-                preview.src = item.image.replace('https://drive.google.com/uc?export=view&id=', 'https://drive.google.com/thumbnail?id=');
-                preview.classList.remove('hidden');
-                document.getElementById('image-placeholder-text').classList.add('hidden');
-            }
-
-            document.getElementById('add-item-modal').classList.remove('hidden');
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, function(ch) {
+                return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
+            });
         }
 
+        function toImageUrl(url, size = 1000) {
+            if (!url) return '';
+            const value = String(url);
+            const driveMatch = value.match(/drive\.google\.com\/(?:uc\?export=view&id=|file\/d\/)([a-zA-Z0-9_-]+)/);
+            if (driveMatch) return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w${size}`;
+            if (value.includes('drive.google.com/thumbnail?id=')) {
+                return value.replace(/&sz=w\d+/g, '') + `&sz=w${size}`;
+            }
+            return value;
+        }
+
+        function openEditItemModal(id) {
+            const item = items.find(i => String(i.id) === String(id));
+            if (!item) return;
+
+            const old = document.getElementById('item-detail-modal');
+            if (old) old.remove();
+
+            const modal = document.createElement('div');
+            modal.id = 'edit-item-modal';
+            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-[10000] flex items-end md:items-center justify-center p-0 md:p-4';
+            modal.innerHTML = `
+                <div class="bg-white w-full max-w-md max-h-[94vh] overflow-y-auto rounded-t-3xl md:rounded-3xl p-6 shadow-2xl">
+                    <div class="flex justify-between items-center border-b border-stone-100 pb-3 mb-4">
+                        <div>
+                            <h3 class="font-serif text-lg font-bold text-stone-800">แก้ไขสินค้า</h3>
+                            <p class="text-[11px] text-stone-400">แก้ไขแล้วบันทึกเข้าฐานข้อมูลกลาง</p>
+                        </div>
+                        <button onclick="closeEditItemModal()" class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <form id="edit-item-form" onsubmit="handleEditItem(event, '${String(item.id)}')" class="space-y-3">
+                        <div>
+                            <label class="text-xs font-semibold text-stone-700 mb-1 block">ชื่อรายการ *</label>
+                            <input id="edit-item-title" required value="${escapeHtml(item.title || '')}" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs font-semibold text-stone-700 mb-1 block">หมวดหมู่ *</label>
+                                <select id="edit-item-category" required class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
+                                    ${categoryOptions(item.category)}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-stone-700 mb-1 block">แบรนด์</label>
+                                <input id="edit-item-brand" value="${escapeHtml(item.brand || '')}" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-stone-700 mb-1 block">โทนสี</label>
+                            <input id="edit-item-color" value="${escapeHtml(item.color || '')}" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-stone-700 mb-1 block">เปลี่ยนรูปภาพ (ไม่เลือก = ใช้รูปเดิม)</label>
+                            <input type="file" id="edit-item-file" accept="image/*" onchange="previewEditImageFile(event)" class="text-[10px] text-stone-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-stone-100 file:text-stone-700">
+                        </div>
+                        <div class="w-full h-44 rounded-xl border border-dashed border-stone-300 bg-stone-50 flex items-center justify-center overflow-hidden">
+                            <img id="edit-image-preview" src="${toImageUrl(item.image, 800)}" class="w-full h-full object-contain ${item.image ? '' : 'hidden'}">
+                            <span id="edit-image-placeholder" class="text-stone-400 text-xs ${item.image ? 'hidden' : ''}">รูปภาพเดิม</span>
+                        </div>
+                        <div class="pt-2 flex gap-2">
+                            <button type="button" onclick="closeEditItemModal()" class="flex-1 py-2.5 bg-stone-100 text-stone-700 rounded-xl text-xs font-semibold">ยกเลิก</button>
+                            <button type="submit" class="flex-1 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold">บันทึกการแก้ไข</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', e => { if (e.target === modal) closeEditItemModal(); });
+        }
+
+        function categoryOptions(selected) {
+            const options = [
+                ['tshirt','👕 เสื้อ (T-Shirt)'],
+                ['shirt','👔 เสื้อเชิ้ต (Shirt)'],
+                ['jacket','🧥 แจ็คเก็ต (Jacket)'],
+                ['pants','👖 กางเกง/กระโปรง'],
+                ['glasses','🕶️ แว่นตา/แอคเซสเซอรี'],
+                ['shoes','👟 รองเท้า']
+            ];
+            return options.map(([value,label]) => `<option value="${value}" ${value === selected ? 'selected' : ''}>${label}</option>`).join('');
+        }
+
+        let editUploadedImageBase64 = '';
+
+        function previewEditImageFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            compressImageToDataUrl(file).then(dataUrl => {
+                editUploadedImageBase64 = dataUrl;
+                const img = document.getElementById('edit-image-preview');
+                img.src = dataUrl;
+                img.classList.remove('hidden');
+                document.getElementById('edit-image-placeholder').classList.add('hidden');
+            }).catch(err => {
+                console.error(err);
+                showToast('อ่านรูปภาพไม่สำเร็จ', 'error');
+            });
+        }
+
+        function closeEditItemModal() {
+            const modal = document.getElementById('edit-item-modal');
+            if (modal) modal.remove();
+            editUploadedImageBase64 = '';
+        }
+
+        function compressImageToDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = evt => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const maxSize = 1200;
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxSize || height > maxSize) {
+                            if (width > height) {
+                                height = Math.round(height * maxSize / width);
+                                width = maxSize;
+                            } else {
+                                width = Math.round(width * maxSize / height);
+                                height = maxSize;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.82));
+                    };
+                    img.onerror = reject;
+                    img.src = evt.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // --- ADD & DELETE ITEMS ---
         function openAddItemModal() {
-            document.getElementById('modal-title-text').innerText = "เพิ่มเสื้อผ้าใหม่";
-            document.getElementById('edit-item-id').value = "";
-            document.getElementById('add-item-form').reset();
-            uploadedImageBase64 = '';
-            document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('image-placeholder-text').classList.remove('hidden');
             document.getElementById('add-item-modal').classList.remove('hidden');
         }
 
         function closeAddItemModal() {
             document.getElementById('add-item-modal').classList.add('hidden');
+            document.getElementById('add-item-form').reset();
+            uploadedImageBase64 = '';
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('image-placeholder-text').classList.remove('hidden');
         }
 
         function previewImageFile(e) {
             const file = e.target.files[0];
             if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                uploadedImageBase64 = evt.target.result;
+            compressImageToDataUrl(file).then(dataUrl => {
+                uploadedImageBase64 = dataUrl;
                 const preview = document.getElementById('image-preview');
-                preview.src = uploadedImageBase64;
+                preview.src = dataUrl;
                 preview.classList.remove('hidden');
                 document.getElementById('image-placeholder-text').classList.add('hidden');
-            };
-            reader.readAsDataURL(file);
+            }).catch(err => {
+                console.error(err);
+                showToast('อ่านรูปภาพไม่สำเร็จ', 'error');
+            });
         }
 
-        // บันทึกทั้งเคส "เพิ่มใหม่" และ "แก้ไข"
-        function handleSaveItem(e) {
+        async function handleAddItem(e) {
             e.preventDefault();
-            const editId = document.getElementById('edit-item-id').value;
-            const title = document.getElementById('item-title').value;
+            if (isSyncing) return;
+
+            const title = document.getElementById('item-title').value.trim();
             const category = document.getElementById('item-category').value;
-            const brand = document.getElementById('item-brand').value;
-            const color = document.getElementById('item-color').value;
+            const brand = document.getElementById('item-brand').value.trim();
+            const color = document.getElementById('item-color').value.trim();
 
-            if (editId) {
-                // เคสแก้ไข
-                const item = items.find(i => String(i.id) === String(editId));
-                if (item) {
-                    item.title = title;
-                    item.category = category;
-                    item.brand = brand;
-                    item.color = color;
-                    if (uploadedImageBase64) item.image = uploadedImageBase64;
+            const newItem = {
+                id: makeId(),
+                title,
+                category,
+                brand: brand || 'My Wardrobe',
+                color: color || 'Basic',
+                image: uploadedImageBase64 || '',
+                favorite: false
+            };
 
-                    saveData();
-                    renderAllItems();
-                    renderItems();
-                    closeAddItemModal();
-                    showToast('กำลังอัปเดตข้อมูลบน Google Drive...');
-
-                    if (googleScriptUrl) {
-                        fetch(googleScriptUrl, {
-                            method: 'POST',
-                            mode: 'no-cors',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ action: 'update_item', item: item })
-                        }).then(() => showToast('✅ แก้ไขเสื้อผ้าเรียบร้อยแล้ว'));
-                    }
+            isSyncing = true;
+            showToast('กำลังบันทึกสินค้า...');
+            try {
+                const result = await postGoogleAction({ action: 'add_item', item: newItem });
+                if (!result || result.status !== 'success') {
+                    throw new Error(result?.message || 'บันทึกไม่สำเร็จ');
                 }
-            } else {
-                // เคสเพิ่มใหม่
-                const newItem = {
-                    id: Date.now().toString(),
-                    title: title,
-                    category: category,
-                    brand: brand || 'unknow',
-                    color: color || '-',
-                    image: uploadedImageBase64 || '',
-                    favorite: false
-                };
-
-                items.unshift(newItem);
-                saveData();
-                renderAllItems();
-                renderItems();
-                updateCounts();
                 closeAddItemModal();
-                showToast('กำลังบันทึกไป Google Drive...');
+                await loadItemsFromGoogle(false);
+                showToast('✅ เพิ่มสินค้าและบันทึกลง Google แล้ว');
+            } catch (error) {
+                console.error('Add Item Error:', error);
+                showToast('บันทึก Google ไม่สำเร็จ กรุณาลองอีกครั้ง', 'error');
+            } finally {
+                isSyncing = false;
+            }
+        }
 
-                if (googleScriptUrl) {
-                    fetch(googleScriptUrl, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'add_item', item: newItem })
-                    }).then(() => showToast('✅ บันทึกเรียบร้อย'));
+        async function handleEditItem(e, id) {
+            e.preventDefault();
+            if (isSyncing) return;
+
+            const item = items.find(i => String(i.id) === String(id));
+            if (!item) return;
+
+            const updatedItem = {
+                id: String(id),
+                title: document.getElementById('edit-item-title').value.trim(),
+                category: document.getElementById('edit-item-category').value,
+                brand: document.getElementById('edit-item-brand').value.trim() || 'My Wardrobe',
+                color: document.getElementById('edit-item-color').value.trim() || 'Basic',
+                favorite: !!item.favorite
+            };
+
+            if (editUploadedImageBase64) updatedItem.image = editUploadedImageBase64;
+
+            isSyncing = true;
+            showToast('กำลังบันทึกการแก้ไข...');
+            try {
+                const result = await postGoogleAction({ action: 'update_item', item: updatedItem });
+                if (!result || result.status !== 'success') {
+                    throw new Error(result?.message || 'แก้ไขไม่สำเร็จ');
                 }
+                closeEditItemModal();
+                await loadItemsFromGoogle(false);
+                showToast('✅ แก้ไขสินค้าเรียบร้อยแล้ว');
+            } catch (error) {
+                console.error('Update Item Error:', error);
+                showToast('แก้ไขใน Google ไม่สำเร็จ', 'error');
+            } finally {
+                isSyncing = false;
             }
         }
 
         async function deleteItem(id) {
             const item = items.find(i => String(i.id) === String(id));
-            if (!item) return;
+            if (!item || isSyncing) return;
 
-            if (!confirm(`ยืนยันการลบ "${item.title}" หรือไม่?`)) return;
+            const confirmed = confirm(`ต้องการลบ "${item.title || 'รายการนี้'}" ใช่หรือไม่?\n\nรายการจะถูกลบจาก Google Sheets และอุปกรณ์ทุกเครื่อง`);
+            if (!confirmed) return;
 
-            items = items.filter(i => String(i.id) !== String(id));
+            isSyncing = true;
+            showToast('กำลังลบสินค้า...');
+            try {
+                const result = await postGoogleAction({ action: 'delete_item', id: String(id) });
+                if (!result || result.status !== 'success') {
+                    throw new Error(result?.message || 'ลบไม่สำเร็จ');
+                }
+                const detail = document.getElementById('item-detail-modal');
+                if (detail) detail.remove();
+                closeEditItemModal();
+                await loadItemsFromGoogle(false);
+                showToast('✅ ลบสินค้าเรียบร้อยแล้ว');
+            } catch (error) {
+                console.error('Delete Item Error:', error);
+                showToast('ลบสินค้าไม่สำเร็จ', 'error');
+            } finally {
+                isSyncing = false;
+            }
+        }
+
+        async function toggleFavorite(id) {
+            const item = items.find(i => String(i.id) === String(id));
+            if (!item || isSyncing) return;
+
+            const nextFavorite = !item.favorite;
+            item.favorite = nextFavorite;
             saveData();
             renderAllItems();
             renderItems();
-            updateCounts();
 
-            const detailModal = document.getElementById('item-detail-modal');
-            if (detailModal) detailModal.remove();
+            try {
+                const result = await postGoogleAction({
+                    action: 'update_item',
+                    item: { id: String(id), favorite: nextFavorite }
+                });
+                if (!result || result.status !== 'success') throw new Error(result?.message || 'sync favorite failed');
+            } catch (error) {
+                item.favorite = !nextFavorite;
+                saveData();
+                renderAllItems();
+                renderItems();
+                showToast('บันทึก Favorite ไม่สำเร็จ', 'error');
+            }
+        }
 
-            showToast('กำลังลบข้อมูล...');
+        // --- MIX & MATCH OUTFIT CANVAS ---
+        function populateMixerDropdowns() {
+            const categories = ['glasses', 'shirt', 'jacket', 'pants', 'shoes'];
+            categories.forEach(cat => {
+                const select = document.getElementById(`select-${cat}`);
+                select.innerHTML = '<option value="">-- ไม่เลือก --</option>';
+                items.filter(i => {
+                    if (cat === 'shirt') return i.category === 'shirt' || i.category === 'tshirt';
+                    return i.category === cat;
+                }).forEach(item => {
+                    select.innerHTML += `<option value="${item.id}">${item.title} (${item.brand})</option>`;
+                });
+            });
+        }
+
+        function updateMixerCanvas() {
+            const slots = ['glasses', 'shirt', 'jacket', 'pants', 'shoes'];
+            slots.forEach(slot => {
+                const selectedId = document.getElementById(`select-${slot}`).value;
+                const container = document.getElementById(`canvas-${slot}`);
+                if (selectedId) {
+                    const item = items.find(i => String(i.id) === String(selectedId));
+                    if(item) {
+                        const imageUrl = (item.image || '').replace('https://drive.google.com/uc?export=view&id=', 'https://drive.google.com/thumbnail?id=');
+                        container.innerHTML = `<img src="${imageUrl}&sz=w1000" class="w-full h-full object-contain p-1 rounded-lg" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">`;
+                        container.classList.remove('border-dashed');
+                        container.classList.add('bg-white', 'shadow-sm');
+                    }
+                } else {
+                    container.innerHTML = `<span class="text-stone-300 text-xs">${getSlotLabel(slot)}</span>`;
+                    container.classList.add('border-dashed');
+                    container.classList.remove('bg-white', 'shadow-sm');
+                }
+            });
+        }
+
+        function getSlotLabel(slot) {
+            const map = { glasses: 'แว่นตา', shirt: 'เสื้อตัวใน', jacket: 'แจ็คเก็ต', pants: 'กางเกง', shoes: 'รองเท้า' };
+            return map[slot] || '';
+        }
+
+        function resetMixerCanvas() {
+            ['glasses', 'shirt', 'jacket', 'pants', 'shoes'].forEach(slot => {
+                document.getElementById(`select-${slot}`).value = '';
+            });
+            updateMixerCanvas();
+        }
+
+        function saveOutfit() {
+            const name = document.getElementById('outfit-name-input').value || 'My Custom Outfit';
+            const occasion = document.getElementById('select-occasion').value;
+            
+            const glassesId = document.getElementById('select-glasses').value;
+            const shirtId = document.getElementById('select-shirt').value;
+            const jacketId = document.getElementById('select-jacket').value;
+            const pantsId = document.getElementById('select-pants').value;
+            const shoesId = document.getElementById('select-shoes').value;
+
+            if(!shirtId && !pantsId && !jacketId) {
+                showToast('กรุณาเลือกเสื้อผ้าอย่างน้อย 1 ชิ้นเพื่อรวมชุด', 'warning');
+                return;
+            }
+
+            const newOutfit = {
+                id: Date.now().toString(),
+                name: name,
+                occasion: occasion,
+                itemIds: [glassesId, shirtId, jacketId, pantsId, shoesId].filter(Boolean)
+            };
+
+            outfits.unshift(newOutfit);
+            saveData();
+
             if (googleScriptUrl) {
                 fetch(googleScriptUrl, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'delete_item', id: String(id) })
-                }).then(() => showToast('✅ ลบเรียบร้อยแล้ว'));
+                    body: JSON.stringify({ action: 'save_outfit', outfit: newOutfit })
+                }).catch(error => {
+                    console.error('Save Outfit Error:', error);
+                });
             }
+
+            renderOutfits();
+            updateCounts();
+            showToast('บันทึกเซ็ตแต่งตัวเรียบร้อย!');
+            document.getElementById('outfit-name-input').value = '';
         }
 
-        async function loadItemsFromGoogle() {
-            if (!googleScriptUrl) return;
+        function renderOutfits() {
+            const grid = document.getElementById('outfits-grid');
+            grid.innerHTML = '';
 
-            try {
-                showToast('กำลังดึงข้อมูลล่าสุด...');
-                const response = await fetch(googleScriptUrl);
-                const data = await response.json();
+            if(outfits.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-10 text-center text-stone-400 bg-white rounded-2xl border border-stone-200">
+                        <i class="fa-solid fa-wand-magic-sparkles text-3xl mb-2 opacity-50"></i>
+                        <p class="text-xs">ยังไม่มีชุดที่จัดไว้ ลองไปที่แท็บ Mix & Match เพื่อสร้างชุดแรกกันเลย!</p>
+                    </div>
+                `;
+                return;
+            }
 
-                if (data.status === 'success') {
-                    if (Array.isArray(data.items)) items = data.items;
-                    if (Array.isArray(data.outfits)) outfits = data.outfits;
+            outfits.forEach(outfit => {
+                const outfitItems = outfit.itemIds.map(id => items.find(i => i.id === id)).filter(Boolean);
+                const card = document.createElement('div');
+                card.onclick = () => openOutfitDetail(outfit.id);
+                card.style.cursor = 'pointer';
+                card.className = "bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-3 relative";
+                
+                let itemThumbsHtml = outfitItems.map(item => {
+                    const imageUrl = (item.image || '').replace('https://drive.google.com/uc?export=view&id=', 'https://drive.google.com/thumbnail?id=');
+                    return `
+                        <div class="w-14 h-14 bg-[#F7F5F0] rounded-xl p-1 border border-stone-100 flex items-center justify-center">
+                            <img src="${imageUrl}&sz=w500" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
+                        </div>
+                    `;
+                }).join('');
 
-                    saveData();
-                    renderAllItems();
-                    renderItems();
-                    updateCounts();
-                    showToast(`☁️ อัปเดตข้อมูลเรียบร้อยแล้ว`);
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="text-xs font-semibold text-stone-600">
+                                <span class="text-xs font-semibold text-stone-400">Set Outfit :</span>
+                                <span class="text-sm font-bold text-stone-800">${outfit.name}</span>
+                            </h4>
+                            <span class="text-xs font-semibold text-stone-600">
+                                <span class="text-stone-400">Style :</span> ${outfit.occasion}
+                            </span>
+                        </div>
+                        <button onclick="deleteOutfit('${outfit.id}')" class="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center hover:bg-rose-600">
+                            <i class="fa-solid fa-trash-can text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
+                        ${itemThumbsHtml}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openOutfitDetail(id) {
+            const outfit = outfits.find(o => String(o.id) === String(id));
+            if (!outfit) return;
+
+            const outfitItems = outfit.itemIds
+                .map(itemId => items.find(item => String(item.id) === String(itemId)))
+                .filter(Boolean);
+
+            const modal = document.createElement('div');
+            modal.id = 'outfit-detail-modal';
+            modal.className = 'fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl">
+                    <div class="sticky top-0 bg-white z-10 flex justify-between items-center px-5 pt-8 pb-5 border-b border-stone-100">
+                        <div>
+                            <h2 class="text-xs font-semibold text-stone-600">
+                                <span class="text-xs font-semibold text-stone-400">Set Outfit :</span>
+                                <span class="text-sm font-bold text-stone-800">${outfit.name}</span>
+                            </h2>
+                            <span class="text-xs font-semibold text-stone-600">
+                                <span class="text-xs font-semibold text-stone-400">Style :</span> ${outfit.occasion}
+                            </span>
+                        </div>
+                        <button onclick="document.getElementById('outfit-detail-modal').remove()" class="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-500 text-xl">×</button>
+                    </div>
+
+                    <div class="p-5 space-y-5">
+                        ${outfitItems.map(item => {
+                            const imageUrl = (item.image || '').replace('https://drive.google.com/uc?export=view&id=', 'https://drive.google.com/thumbnail?id=');
+                            return `
+                                <div class="border border-stone-200 rounded-2xl p-4">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div>
+                                            <h3 class="text-base font-bold text-stone-800">${item.title || item.name || 'เสื้อผ้า'}</h3>
+                                            <p class="text-sm text-stone-500">Brand: ${item.brand || 'ไม่ระบุ'}</p>
+                                            <p class="text-sm text-stone-500">Color: ${item.color || 'ไม่ระบุ'}</p>
+                                        </div>
+                                    </div>
+                                    <div class="w-full h-72 bg-[#F7F5F0] rounded-2xl flex items-center justify-center p-6">
+                                        <img src="${imageUrl}&sz=w1000" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/600x600/F3EFEA/A8A29E?text=No+Image'">
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function deleteOutfit(id) {
+            outfits = outfits.filter(o => String(o.id) !== String(id));
+            saveData();
+            renderOutfits();
+            updateCounts();
+
+            if (googleScriptUrl) {
+                try {
+                    await fetch(googleScriptUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete_outfit', id: String(id) })
+                    });
+                    showToast('ลบเซ็ตแต่งตัวแล้ว');
+                } catch (error) {
+                    console.error(error);
+                    showToast('ลบในเครื่องแล้ว แต่ยังซิงก์ Google Sheets ไม่สำเร็จ', 'error');
                 }
-            } catch (error) {
-                console.error('Google Sync Error:', error);
+            } else {
+                showToast('ลบเซ็ตแต่งตัวแล้ว');
             }
         }
 
-        function filterCategory(cat) {
-            activeCategory = cat;
-            renderItems();
+        // --- CALENDAR PLANNER ---
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-days-grid');
+            grid.innerHTML = '';
+            
+            for(let day = 1; day <= 31; day++) {
+                const dayStr = `2026-08-${day < 10 ? '0'+day : day}`;
+                const plannedOutfitId = calendarPlan[dayStr];
+                const outfit = outfits.find(o => o.id === plannedOutfitId);
+
+                const cell = document.createElement('div');
+                cell.className = `min-h-[50px] p-1 rounded-xl border ${outfit ? 'bg-amber-50 border-amber-200' : 'bg-stone-50 border-stone-200/60'} flex flex-col justify-between items-center cursor-pointer hover:border-stone-400 transition`;
+                cell.onclick = () => openCalDetail(dayStr);
+
+                cell.innerHTML = `
+                    <span class="text-[10px] font-bold ${outfit ? 'text-amber-800' : 'text-stone-400'}">${day}</span>
+                    ${outfit ? `<i class="fa-solid fa-shirt text-[10px] text-amber-600 mb-1"></i>` : ''}
+                `;
+                grid.appendChild(cell);
+            }
+        }
+
+        function openCalDetail(dateStr) {
+            const card = document.getElementById('calendar-detail-card');
+            const dateText = document.getElementById('cal-selected-date-text');
+            const preview = document.getElementById('cal-outfit-preview');
+
+            dateText.innerText = `แผนแต่งตัววันที่ ${dateStr}`;
+            card.classList.remove('hidden');
+
+            const currentOutfitId = calendarPlan[dateStr];
+            let optionsHtml = outfits.map(o => `<option value="${o.id}" ${o.id === currentOutfitId ? 'selected' : ''}>${o.name} (${o.occasion})</option>`).join('');
+
+            preview.innerHTML = `
+                <div class="flex-1 space-y-2">
+                    <select id="cal-outfit-select" onchange="assignOutfitToDate('${dateStr}', this.value)" class="w-full p-2 text-xs rounded-xl border border-stone-200 bg-white">
+                        <option value="">-- ยังไม่ได้เลือกชุด --</option>
+                        ${optionsHtml}
+                    </select>
+                </div>
+            `;
+        }
+
+        function closeCalDetail() {
+            document.getElementById('calendar-detail-card').classList.add('hidden');
+        }
+
+        function assignOutfitToDate(dateStr, outfitId) {
+            if(outfitId) {
+                calendarPlan[dateStr] = outfitId;
+                showToast(`บันทึกชุดสำหรับวันที่ ${dateStr}`);
+            } else {
+                delete calendarPlan[dateStr];
+                showToast('ยกเลิกชุดสำหรับวันนี้');
+            }
+            saveData();
+            renderCalendar();
+        }
+
+        // --- GOOGLE SHEETS / DRIVE SYNC ---
+        function saveGoogleConfig() {
+            const url = document.getElementById('google-script-url').value.trim();
+            if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(url)) {
+                showToast('URL ของ Google Apps Script ไม่ถูกต้อง', 'warning');
+                return;
+            }
+            googleScriptUrl = url;
+            localStorage.setItem('google_script_url', url);
+            showToast('บันทึก Web App URL แล้ว');
+            loadItemsFromGoogle(false);
+        }
+
+        async function postGoogleAction(payload) {
+            if (!googleScriptUrl) throw new Error('ยังไม่ได้ตั้งค่า Google Apps Script URL');
+
+            // ใช้ application/x-www-form-urlencoded เพื่อหลีกเลี่ยง CORS preflight
+            const body = new URLSearchParams();
+            body.set('payload', JSON.stringify(payload));
+
+            await fetch(googleScriptUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                body
+            });
+
+            // no-cors อ่าน response ไม่ได้ จึงให้ Apps Script ทำงานก่อน แล้วค่อยอ่านสถานะจริงด้วย GET
+            await new Promise(resolve => setTimeout(resolve, 700));
+            const response = await fetch(googleScriptUrl + '?t=' + Date.now(), { cache: 'no-store' });
+            const data = await response.json();
+            if (data.status !== 'success') {
+                throw new Error(data.message || 'Google Apps Script error');
+            }
+            return data;
+        }
+
+        async function syncDataToGoogle() {
+            if (!googleScriptUrl) {
+                showToast('กรุณากรอก Google Apps Script URL ก่อน', 'warning');
+                return;
+            }
+            try {
+                isSyncing = true;
+                showToast('กำลังอ่านข้อมูลล่าสุดจาก Google...');
+                await loadItemsFromGoogle(false);
+                showToast('☁️ ข้อมูลล่าสุดจาก Google ถูกโหลดแล้ว');
+            } catch (error) {
+                console.error(error);
+                showToast('ซิงก์ Google ไม่สำเร็จ', 'error');
+            } finally {
+                isSyncing = false;
+            }
+        }
+
+        function toggleScriptGuide() {
+            const guide = document.getElementById('script-guide-content');
+            guide.classList.toggle('hidden');
+        }
+
+        function copyGasCode() {
+            const code = document.getElementById('gas-code-block').innerText;
+            navigator.clipboard.writeText(code);
+            showToast('คัดลอกโค้ด Google Apps Script แล้ว');
         }
 
         function saveData() {
             localStorage.setItem('my_closet_items', JSON.stringify(items));
             localStorage.setItem('my_closet_outfits', JSON.stringify(outfits));
+            localStorage.setItem('my_closet_calendar', JSON.stringify(calendarPlan));
         }
 
         function updateCounts() {
@@ -483,9 +1358,70 @@
             document.getElementById('count-outfits').innerText = outfits.length;
         }
 
-        function showToast(msg) {
+        async function loadItemsFromGoogle(showMessage = true) {
+            if (!googleScriptUrl) return;
+
+            try {
+                if (showMessage) showToast('กำลังโหลดข้อมูลจาก Google...');
+                const response = await fetch(googleScriptUrl + '?t=' + Date.now(), { cache: 'no-store' });
+                const data = await response.json();
+
+                if (data.status !== 'success') {
+                    throw new Error(data.message || 'โหลดข้อมูลไม่สำเร็จ');
+                }
+
+                const localKeyExists = localStorage.getItem('my_closet_items') !== null;
+                const localItems = Array.isArray(items) ? [...items] : [];
+
+                // ถ้า Google ยังว่าง แต่เครื่องนี้เคยมีข้อมูลจริง ให้เสนอ/ทำ migration อัตโนมัติครั้งเดียว
+                if (Array.isArray(data.items) && data.items.length === 0 && localKeyExists && localItems.length > 0 && !localStorage.getItem('my_closet_migrated')) {
+                    const looksLikeDemoOnly = localItems.length === initialItems.length &&
+                        localItems.every((x, i) => String(x.id) === String(initialItems[i]?.id));
+                    if (!looksLikeDemoOnly) {
+                        await postGoogleAction({ action: 'sync_items', items: localItems });
+                        localStorage.setItem('my_closet_migrated', '1');
+                        return loadItemsFromGoogle(false);
+                    }
+                }
+
+                if (Array.isArray(data.items)) items = data.items;
+                if (Array.isArray(data.outfits)) outfits = data.outfits;
+
+                saveData();
+                renderAllItems();
+                renderItems();
+                renderOutfits();
+                populateMixerDropdowns();
+                updateMixerCanvas();
+                renderCalendar();
+                updateCounts();
+
+                if (showMessage) showToast(`☁️ ซิงก์สำเร็จ เสื้อผ้า ${items.length} รายการ / Outfit ${outfits.length} ชุด`);
+                return data;
+            } catch (error) {
+                console.error('Google Load Error:', error);
+                if (showMessage) showToast('โหลดข้อมูลจาก Google ไม่สำเร็จ', 'error');
+                throw error;
+            }
+        }
+
+        function makeId() {
+            return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        }
+
+        function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
             document.getElementById('toast-message').innerText = msg;
+
+            if(type === 'warning') {
+                icon.className = 'fa-solid fa-triangle-exclamation text-amber-400';
+            } else if(type === 'error') {
+                icon.className = 'fa-solid fa-circle-xmark text-rose-400';
+            } else {
+                icon.className = 'fa-solid fa-circle-check text-emerald-400';
+            }
+
             toast.classList.remove('opacity-0', 'pointer-events-none');
             toast.classList.add('opacity-100');
             setTimeout(() => {
