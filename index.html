@@ -500,7 +500,7 @@ function doPost(e) {
         // โค้ดใหม่
         let activeSubTab = 'all';
         let uploadedImageBase64 = '';
-        let googleScriptUrl  = 'https://script.google.com/macros/s/AKfycbxhEaVTs6it5yfm7Bcz8-jkhkUxBIHKqNkKWCF_gNUtXl7bsTipO8EkrS1ZlNPDPBPy/exec';
+        let googleScriptUrl = localStorage.getItem('google_script_url') || 'https://script.google.com/macros/s/AKfycbxhEaVTs6it5yfm7Bcz8-jkhkUxBIHKqNkKWCF_gNUtXl7bsTipO8EkrS1ZlNPDPBPy/exec';
 
         // Initialize App on Load
         window.onload = function() {
@@ -1366,47 +1366,119 @@ function doPost(e) {
             document.getElementById('count-outfits').innerText = outfits.length;
         }
 
-        async function loadItemsFromGoogle() {
+        // --- GOOGLE DATA: LOAD FROM CLOUD ON EVERY DEVICE ---
+        async function loadItemsFromGoogle(options = {}) {
             if (!googleScriptUrl) {
                 console.log('ยังไม่ได้ตั้งค่า Google Apps Script URL');
-                return;
+                return false;
             }
 
+            const silent = options.silent === true;
+            const cacheBustUrl = googleScriptUrl + (googleScriptUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+
+            if (!silent) showToast('กำลังโหลดข้อมูลจาก Google...');
+
             try {
-                showToast('กำลังโหลดข้อมูลจาก Google...');
+                // 1) ปกติ: GET JSON จาก Apps Script
+                const response = await fetch(cacheBustUrl, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    redirect: 'follow'
+                });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
 
-                const response = await fetch(googleScriptUrl);
                 const data = await response.json();
-
                 if (data.status !== 'success') {
                     throw new Error(data.message || 'โหลดข้อมูลไม่สำเร็จ');
                 }
 
-                if (Array.isArray(data.items)) {
-                    items = data.items;
-                }
-
-                if (Array.isArray(data.outfits)) {
-                    outfits = data.outfits;
-                }
-
-                saveData();
-
-                renderAllItems();
-                renderItems();
-                renderOutfits();
-                populateMixerDropdowns();
-                updateMixerCanvas();
-                renderCalendar();
-                updateCounts();
-
-                showToast(`☁️ ซิงก์สำเร็จ เสื้อผ้า ${items.length} รายการ / Outfit ${outfits.length} ชุด`);
+                applyGoogleData(data);
+                if (!silent) showToast(`☁️ ซิงก์สำเร็จ เสื้อผ้า ${items.length} รายการ / Outfit ${outfits.length} ชุด`);
+                return true;
 
             } catch (error) {
-                console.error('Google Load Error:', error);
-                showToast('โหลดข้อมูลจาก Google ไม่สำเร็จ', 'error');
+                console.warn('Google GET failed, trying JSONP fallback:', error);
+
+                // 2) สำรองสำหรับมือถือ/เบราว์เซอร์ที่มีปัญหา CORS/redirect
+                try {
+                    const data = await loadGoogleJsonp(cacheBustUrl);
+                    if (data && data.status === 'success') {
+                        applyGoogleData(data);
+                        if (!silent) showToast(`☁️ ซิงก์สำเร็จ เสื้อผ้า ${items.length} รายการ / Outfit ${outfits.length} ชุด`);
+                        return true;
+                    }
+                    throw new Error((data && data.message) || 'JSONP โหลดข้อมูลไม่สำเร็จ');
+                } catch (jsonpError) {
+                    console.error('Google Load Error:', jsonpError);
+                    if (!silent) showToast('โหลดข้อมูลจาก Google ไม่สำเร็จ', 'error');
+                    return false;
+                }
             }
         }
+
+        function applyGoogleData(data) {
+            if (Array.isArray(data.items)) items = data.items;
+            if (Array.isArray(data.outfits)) outfits = data.outfits;
+
+            saveData();
+            renderAllItems();
+            renderItems();
+            renderOutfits();
+            populateMixerDropdowns();
+            updateMixerCanvas();
+            renderCalendar();
+            updateCounts();
+        }
+
+        function loadGoogleJsonp(url) {
+            return new Promise((resolve, reject) => {
+                const callbackName = '__myClosetGoogleCallback_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+                const script = document.createElement('script');
+                let finished = false;
+
+                const cleanup = () => {
+                    try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+                    script.remove();
+                };
+
+                const timer = setTimeout(() => {
+                    if (finished) return;
+                    finished = true;
+                    cleanup();
+                    reject(new Error('JSONP timeout'));
+                }, 12000);
+
+                window[callbackName] = (data) => {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timer);
+                    cleanup();
+                    resolve(data);
+                };
+
+                script.onerror = () => {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timer);
+                    cleanup();
+                    reject(new Error('JSONP network error'));
+                };
+
+                script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + encodeURIComponent(callbackName);
+                document.head.appendChild(script);
+            });
+        }
+
+        // เมื่อกลับมาเปิดหน้าเว็บบนมือถือ ให้ดึงข้อมูลล่าสุดจาก Google อีกครั้ง
+        window.addEventListener('pageshow', () => {
+            setTimeout(() => loadItemsFromGoogle({ silent: true }), 150);
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                setTimeout(() => loadItemsFromGoogle({ silent: true }), 150);
+            }
+        });
 
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
