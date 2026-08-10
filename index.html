@@ -316,13 +316,27 @@
                         <div id="script-guide-content" class="hidden space-y-2 text-stone-600 pt-2 border-t border-stone-200/60">
                             <ol class="list-decimal list-inside space-y-1">
                                 <li>สร้าง Google Sheet ใหม่ แล้วไปที่เมนู <strong>ส่วนขยาย (Extensions) > Apps Script</strong></li>
-                                <li>วางโค้ด Code.gs ที่ให้มาแทนที่ทั้งหมด แล้วกดบันทึก</li>
-                                <li>กด <strong>Deploy > New deployment</strong> เลือกประเภทเป็น <em>Web app</em></li>
-                                <li>ตั้งค่า Execute as: <strong>Me</strong> และ Who has access: <strong>Anyone</strong> แล้วกด Deploy</li>
+                                <li>วางโค้ดสคริปต์ด้านล่างนี้แทนที่ทั้งหมด แล้วกดบันทึก</li>
+                                <li>กด <strong>Deploy > New Deployment</strong> เลือกประเภทเป็น <em>Web app</em></li>
+                                <li>ตั้งค่า "Who has access" เป็น <strong>Anyone (ทุกคน)</strong> แล้วกด Deploy</li>
                                 <li>คัดลอก Web App URL มาใส่ในช่องด้านบน</li>
                             </ol>
                             <div class="relative">
-                                <pre class="bg-stone-900 text-stone-200 p-3 rounded-xl text-[10px] overflow-x-auto max-h-40 font-mono" id="gas-code-block">นำ Code.gs ที่ให้มาวางทั้งไฟล์ ไม่ต้องตัดหรือเติมโค้ดเอง</pre>
+                                <pre class="bg-stone-900 text-stone-200 p-3 rounded-xl text-[10px] overflow-x-auto max-h-40 font-mono" id="gas-code-block">
+function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  
+  if (data.action === "sync_items") {
+    sheet.clear();
+    sheet.appendRow(["ID", "Title", "Category", "Brand", "Color", "ImageURL", "Favorite"]);
+    data.items.forEach(function(item) {
+      sheet.appendRow([item.id, item.title, item.category, item.brand, item.color, item.image, item.favorite]);
+    });
+    return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+                                </pre>
                                 <button onclick="copyGasCode()" class="absolute top-2 right-2 px-2 py-1 bg-white/20 text-white rounded text-[10px] hover:bg-white/30">
                                     <i class="fa-regular fa-copy"></i> Copy
                                 </button>
@@ -489,9 +503,7 @@
         // โค้ดใหม่
         let activeSubTab = 'all';
         let uploadedImageBase64 = '';
-        const DEFAULT_GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxhEaVTs6it5yfm7Bcz8-jkhkUxBIHKqNkKWCF_gNUtXl7bsTipO8EkrS1ZlNPDPBPy/exec';
-        let googleScriptUrl = localStorage.getItem('google_script_url') || DEFAULT_GOOGLE_SCRIPT_URL;
-        let isSyncing = false;
+        let googleScriptUrl  = 'https://script.google.com/macros/s/AKfycbxhEaVTs6it5yfm7Bcz8-jkhkUxBIHKqNkKWCF_gNUtXl7bsTipO8EkrS1ZlNPDPBPy/exec';
 
         // Initialize App on Load
         window.onload = function() {
@@ -504,7 +516,7 @@
             if(googleScriptUrl) {
                 document.getElementById('google-script-url').value = googleScriptUrl;
             }
-            loadItemsFromGoogle(true).catch(() => {});
+            loadItemsFromGoogle();
         };
 
         // --- NAVIGATION & TABS ---
@@ -581,7 +593,9 @@
                 card.className = "bg-[#EFECE6] rounded-2xl p-2 h-48 md:h-56 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-md transition border border-stone-200/40";
                 card.onclick = () => openItemDetail(item.id);
 
-                const imageUrl = toImageUrl(item.image, 1000);
+                const imageUrl = item.image
+                    ? item.image.replace('https://drive.google.com/uc?export=view&id=', 'https://drive.google.com/thumbnail?id=') + '&sz=w1000'
+                    : '';
 
                 card.innerHTML = `
                     <img src="${imageUrl}" alt="${item.title}" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
@@ -637,7 +651,7 @@
                     </button>
                     
                     <div onclick="openItemDetail('${item.id}')" class="w-full h-36 rounded-xl bg-[#F7F5F0] overflow-hidden mb-2 flex items-center justify-center cursor-pointer">
-                        <img src="${toImageUrl(item.image, 1000)}" alt="${escapeHtml(item.title)}" class="w-full h-full object-contain p-2 hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
+                        <img src="${item.image.replace('https://drive.google.com/uc?export=view&id=', 'https://drive.google.com/thumbnail?id=')}&sz=w1000" alt="${item.title}" class="w-full h-full object-contain p-2 hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
                     </div>
 
                     <div class="space-y-1">
@@ -658,42 +672,32 @@
             const item = items.find(i => String(i.id) === String(itemId));
             if (!item) return;
 
-            const imageUrl = toImageUrl(item.image, 2000);
+            const imageUrl = item.image
+                ? item.image.replace('https://drive.google.com/uc?export=view&id=', 'https://drive.google.com/thumbnail?id=') + '&sz=w2000'
+                : '';
+
             const modal = document.createElement('div');
             modal.id = 'item-detail-modal';
             modal.className = 'fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4';
             modal.innerHTML = `
-                <div class="bg-white rounded-3xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl">
-                    <div class="flex justify-between items-center px-5 pt-4 pb-2">
-                        <h3 class="text-sm font-bold text-stone-800">รายละเอียดสินค้า</h3>
+                <div class="bg-white rounded-3xl w-full max-w-lg h-[90vh] overflow-hidden shadow-2xl">
+                    <div class="flex justify-end p-3">
                         <button onclick="document.getElementById('item-detail-modal').remove()" class="w-10 h-10 rounded-full bg-stone-100 text-stone-600 text-xl">×</button>
                     </div>
                     <div class="px-5 pb-5">
                         <div class="w-full h-[420px] rounded-2xl bg-[#F7F5F0] flex items-center justify-center overflow-hidden mb-5">
-                            ${imageUrl ? `<img src="${imageUrl}" class="w-full h-full object-contain" alt="${escapeHtml(item.title || 'เสื้อผ้า')}">` : `<div class="text-stone-400">ไม่มีรูปภาพ</div>`}
+                            ${imageUrl ? `<img src="${imageUrl}" class="w-full h-full object-contain" alt="${item.title || 'เสื้อผ้า'}">` : `<div class="text-stone-400">ไม่มีรูปภาพ</div>`}
                         </div>
-                        <div class="flex items-start justify-between gap-3 mb-4">
-                            <div>
-                                <h2 class="text-2xl font-bold text-stone-900">${escapeHtml(item.title || 'ไม่มีชื่อ')}</h2>
-                                <p class="text-stone-500 mt-1">${escapeHtml(item.brand || 'ไม่ระบุแบรนด์')}</p>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="openEditItemModal('${String(item.id)}')" class="w-11 h-11 rounded-full bg-stone-900 text-white flex items-center justify-center shadow">
-                                    <i class="fa-solid fa-pen text-sm"></i>
-                                </button>
-                                <button onclick="deleteItem('${String(item.id)}')" class="w-11 h-11 rounded-full bg-rose-500 text-white flex items-center justify-center shadow">
-                                    <i class="fa-solid fa-trash-can text-sm"></i>
-                                </button>
-                            </div>
-                        </div>
+                        <h2 class="text-2xl font-bold text-stone-900 mb-2">${item.title || 'ไม่มีชื่อ'}</h2>
+                        <p class="text-stone-500 mb-4">${item.brand || 'ไม่ระบุแบรนด์'}</p>
                         <div class="space-y-3 text-sm">
                             <div class="flex justify-between border-b pb-3">
                                 <span class="text-stone-400">หมวดหมู่</span>
-                                <span class="font-medium text-stone-800">${escapeHtml(item.category || '-')}</span>
+                                <span class="font-medium text-stone-800">${item.category || '-'}</span>
                             </div>
                             <div class="flex justify-between border-b pb-3">
                                 <span class="text-stone-400">โทนสี</span>
-                                <span class="font-medium text-stone-800">${escapeHtml(item.color || '-')}</span>
+                                <span class="font-medium text-stone-800">${item.color || '-'}</span>
                             </div>
                         </div>
                     </div>
@@ -703,153 +707,6 @@
 
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) modal.remove();
-            });
-        }
-
-        function escapeHtml(value) {
-            return String(value ?? '').replace(/[&<>"']/g, function(ch) {
-                return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
-            });
-        }
-
-        function toImageUrl(url, size = 1000) {
-            if (!url) return '';
-            const value = String(url);
-            const driveMatch = value.match(/drive\.google\.com\/(?:uc\?export=view&id=|file\/d\/)([a-zA-Z0-9_-]+)/);
-            if (driveMatch) return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w${size}`;
-            if (value.includes('drive.google.com/thumbnail?id=')) {
-                return value.replace(/&sz=w\d+/g, '') + `&sz=w${size}`;
-            }
-            return value;
-        }
-
-        function openEditItemModal(id) {
-            const item = items.find(i => String(i.id) === String(id));
-            if (!item) return;
-
-            const old = document.getElementById('item-detail-modal');
-            if (old) old.remove();
-
-            const modal = document.createElement('div');
-            modal.id = 'edit-item-modal';
-            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-[10000] flex items-end md:items-center justify-center p-0 md:p-4';
-            modal.innerHTML = `
-                <div class="bg-white w-full max-w-md max-h-[94vh] overflow-y-auto rounded-t-3xl md:rounded-3xl p-6 shadow-2xl">
-                    <div class="flex justify-between items-center border-b border-stone-100 pb-3 mb-4">
-                        <div>
-                            <h3 class="font-serif text-lg font-bold text-stone-800">แก้ไขสินค้า</h3>
-                            <p class="text-[11px] text-stone-400">แก้ไขแล้วบันทึกเข้าฐานข้อมูลกลาง</p>
-                        </div>
-                        <button onclick="closeEditItemModal()" class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-
-                    <form id="edit-item-form" onsubmit="handleEditItem(event, '${String(item.id)}')" class="space-y-3">
-                        <div>
-                            <label class="text-xs font-semibold text-stone-700 mb-1 block">ชื่อรายการ *</label>
-                            <input id="edit-item-title" required value="${escapeHtml(item.title || '')}" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-xs font-semibold text-stone-700 mb-1 block">หมวดหมู่ *</label>
-                                <select id="edit-item-category" required class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
-                                    ${categoryOptions(item.category)}
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs font-semibold text-stone-700 mb-1 block">แบรนด์</label>
-                                <input id="edit-item-brand" value="${escapeHtml(item.brand || '')}" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-stone-700 mb-1 block">โทนสี</label>
-                            <input id="edit-item-color" value="${escapeHtml(item.color || '')}" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs">
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-stone-700 mb-1 block">เปลี่ยนรูปภาพ (ไม่เลือก = ใช้รูปเดิม)</label>
-                            <input type="file" id="edit-item-file" accept="image/*" onchange="previewEditImageFile(event)" class="text-[10px] text-stone-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-stone-100 file:text-stone-700">
-                        </div>
-                        <div class="w-full h-44 rounded-xl border border-dashed border-stone-300 bg-stone-50 flex items-center justify-center overflow-hidden">
-                            <img id="edit-image-preview" src="${toImageUrl(item.image, 800)}" class="w-full h-full object-contain ${item.image ? '' : 'hidden'}">
-                            <span id="edit-image-placeholder" class="text-stone-400 text-xs ${item.image ? 'hidden' : ''}">รูปภาพเดิม</span>
-                        </div>
-                        <div class="pt-2 flex gap-2">
-                            <button type="button" onclick="closeEditItemModal()" class="flex-1 py-2.5 bg-stone-100 text-stone-700 rounded-xl text-xs font-semibold">ยกเลิก</button>
-                            <button type="submit" class="flex-1 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold">บันทึกการแก้ไข</button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            modal.addEventListener('click', e => { if (e.target === modal) closeEditItemModal(); });
-        }
-
-        function categoryOptions(selected) {
-            const options = [
-                ['tshirt','👕 เสื้อ (T-Shirt)'],
-                ['shirt','👔 เสื้อเชิ้ต (Shirt)'],
-                ['jacket','🧥 แจ็คเก็ต (Jacket)'],
-                ['pants','👖 กางเกง/กระโปรง'],
-                ['glasses','🕶️ แว่นตา/แอคเซสเซอรี'],
-                ['shoes','👟 รองเท้า']
-            ];
-            return options.map(([value,label]) => `<option value="${value}" ${value === selected ? 'selected' : ''}>${label}</option>`).join('');
-        }
-
-        let editUploadedImageBase64 = '';
-
-        function previewEditImageFile(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            compressImageToDataUrl(file).then(dataUrl => {
-                editUploadedImageBase64 = dataUrl;
-                const img = document.getElementById('edit-image-preview');
-                img.src = dataUrl;
-                img.classList.remove('hidden');
-                document.getElementById('edit-image-placeholder').classList.add('hidden');
-            }).catch(err => {
-                console.error(err);
-                showToast('อ่านรูปภาพไม่สำเร็จ', 'error');
-            });
-        }
-
-        function closeEditItemModal() {
-            const modal = document.getElementById('edit-item-modal');
-            if (modal) modal.remove();
-            editUploadedImageBase64 = '';
-        }
-
-        function compressImageToDataUrl(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = evt => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const maxSize = 1200;
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > maxSize || height > maxSize) {
-                            if (width > height) {
-                                height = Math.round(height * maxSize / width);
-                                width = maxSize;
-                            } else {
-                                width = Math.round(width * maxSize / height);
-                                height = maxSize;
-                            }
-                        }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.82));
-                    };
-                    img.onerror = reject;
-                    img.src = evt.target.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
             });
         }
 
@@ -869,140 +726,127 @@
         function previewImageFile(e) {
             const file = e.target.files[0];
             if (!file) return;
-            compressImageToDataUrl(file).then(dataUrl => {
-                uploadedImageBase64 = dataUrl;
-                const preview = document.getElementById('image-preview');
-                preview.src = dataUrl;
-                preview.classList.remove('hidden');
-                document.getElementById('image-placeholder-text').classList.add('hidden');
-            }).catch(err => {
-                console.error(err);
-                showToast('อ่านรูปภาพไม่สำเร็จ', 'error');
-            });
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new Image();
+                img.onload = function() {
+                    const maxSize = 1200;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxSize || height > maxSize) {
+                        if (width > height) {
+                            height = Math.round(height * maxSize / width);
+                            width = maxSize;
+                        } else {
+                            width = Math.round(width * maxSize / height);
+                            height = maxSize;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    uploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.82);
+
+                    const preview = document.getElementById('image-preview');
+                    preview.src = uploadedImageBase64;
+                    preview.classList.remove('hidden');
+                    document.getElementById('image-placeholder-text').classList.add('hidden');
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
-        async function handleAddItem(e) {
+        function handleAddItem(e) {
             e.preventDefault();
-            if (isSyncing) return;
 
-            const title = document.getElementById('item-title').value.trim();
+            const title = document.getElementById('item-title').value;
             const category = document.getElementById('item-category').value;
-            const brand = document.getElementById('item-brand').value.trim();
-            const color = document.getElementById('item-color').value.trim();
+            const brand = document.getElementById('item-brand').value;
+            const color = document.getElementById('item-color').value;
 
             const newItem = {
-                id: makeId(),
-                title,
-                category,
+                id: Date.now().toString(),
+                title: title,
+                category: category,
                 brand: brand || 'My Wardrobe',
                 color: color || 'Basic',
                 image: uploadedImageBase64 || '',
                 favorite: false
             };
 
-            isSyncing = true;
-            showToast('กำลังบันทึกสินค้า...');
-            try {
-                const result = await postGoogleAction({ action: 'add_item', item: newItem });
-                if (!result || result.status !== 'success') {
-                    throw new Error(result?.message || 'บันทึกไม่สำเร็จ');
-                }
-                closeAddItemModal();
-                await loadItemsFromGoogle(false);
-                showToast('✅ เพิ่มสินค้าและบันทึกลง Google แล้ว');
-            } catch (error) {
-                console.error('Add Item Error:', error);
-                showToast('บันทึก Google ไม่สำเร็จ กรุณาลองอีกครั้ง', 'error');
-            } finally {
-                isSyncing = false;
-            }
-        }
+            items.unshift(newItem);
+            saveData();
+            renderAllItems();
+            renderItems();
+            updateCounts();
+            closeAddItemModal();
 
-        async function handleEditItem(e, id) {
-            e.preventDefault();
-            if (isSyncing) return;
+            showToast('กำลังบันทึกเสื้อผ้าไป Google Drive...');
 
-            const item = items.find(i => String(i.id) === String(id));
-            if (!item) return;
-
-            const updatedItem = {
-                id: String(id),
-                title: document.getElementById('edit-item-title').value.trim(),
-                category: document.getElementById('edit-item-category').value,
-                brand: document.getElementById('edit-item-brand').value.trim() || 'My Wardrobe',
-                color: document.getElementById('edit-item-color').value.trim() || 'Basic',
-                favorite: !!item.favorite
-            };
-
-            if (editUploadedImageBase64) updatedItem.image = editUploadedImageBase64;
-
-            isSyncing = true;
-            showToast('กำลังบันทึกการแก้ไข...');
-            try {
-                const result = await postGoogleAction({ action: 'update_item', item: updatedItem });
-                if (!result || result.status !== 'success') {
-                    throw new Error(result?.message || 'แก้ไขไม่สำเร็จ');
-                }
-                closeEditItemModal();
-                await loadItemsFromGoogle(false);
-                showToast('✅ แก้ไขสินค้าเรียบร้อยแล้ว');
-            } catch (error) {
-                console.error('Update Item Error:', error);
-                showToast('แก้ไขใน Google ไม่สำเร็จ', 'error');
-            } finally {
-                isSyncing = false;
+            if (googleScriptUrl) {
+                fetch(googleScriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'add_item', item: newItem })
+                })
+                .then(() => showToast('✅ บันทึกเสื้อผ้าไป Google Drive แล้ว'))
+                .catch((error) => {
+                    console.error(error);
+                    showToast('เพิ่มเสื้อแล้ว แต่ส่งไป Google Drive ไม่สำเร็จ', 'warning');
+                });
+            } else {
+                showToast('เพิ่มเสื้อแล้ว แต่ยังไม่ได้เชื่อม Google Drive', 'warning');
             }
         }
 
         async function deleteItem(id) {
             const item = items.find(i => String(i.id) === String(id));
-            if (!item || isSyncing) return;
+            if (!item) return;
 
-            const confirmed = confirm(`ต้องการลบ "${item.title || 'รายการนี้'}" ใช่หรือไม่?\n\nรายการจะถูกลบจาก Google Sheets และอุปกรณ์ทุกเครื่อง`);
+            const confirmed = confirm(`ต้องการลบ "${item.title || 'รายการนี้'}" ใช่หรือไม่?\n\nการลบแล้วจะไม่สามารถกู้คืนได้`);
             if (!confirmed) return;
 
-            isSyncing = true;
-            showToast('กำลังลบสินค้า...');
-            try {
-                const result = await postGoogleAction({ action: 'delete_item', id: String(id) });
-                if (!result || result.status !== 'success') {
-                    throw new Error(result?.message || 'ลบไม่สำเร็จ');
-                }
-                const detail = document.getElementById('item-detail-modal');
-                if (detail) detail.remove();
-                closeEditItemModal();
-                await loadItemsFromGoogle(false);
-                showToast('✅ ลบสินค้าเรียบร้อยแล้ว');
-            } catch (error) {
-                console.error('Delete Item Error:', error);
-                showToast('ลบสินค้าไม่สำเร็จ', 'error');
-            } finally {
-                isSyncing = false;
-            }
-        }
-
-        async function toggleFavorite(id) {
-            const item = items.find(i => String(i.id) === String(id));
-            if (!item || isSyncing) return;
-
-            const nextFavorite = !item.favorite;
-            item.favorite = nextFavorite;
+            items = items.filter(i => String(i.id) !== String(id));
             saveData();
             renderAllItems();
             renderItems();
+            updateCounts();
 
-            try {
-                const result = await postGoogleAction({
-                    action: 'update_item',
-                    item: { id: String(id), favorite: nextFavorite }
-                });
-                if (!result || result.status !== 'success') throw new Error(result?.message || 'sync favorite failed');
-            } catch (error) {
-                item.favorite = !nextFavorite;
+            showToast('กำลังลบรายการเสื้อผ้า...');
+
+            if (googleScriptUrl) {
+                try {
+                    await fetch(googleScriptUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete_item', id: String(id) })
+                    });
+                    showToast('✅ ลบรายการเสื้อผ้าเรียบร้อยแล้ว');
+                } catch (error) {
+                    console.error('Delete Item Error:', error);
+                    showToast('ลบในเครื่องแล้ว แต่ลบจาก Google Sheets ไม่สำเร็จ', 'error');
+                }
+            } else {
+                showToast('ลบในเครื่องแล้ว แต่ยังไม่ได้เชื่อม Google Sheets', 'warning');
+            }
+        }
+
+        function toggleFavorite(id) {
+            const item = items.find(i => i.id === id);
+            if(item) {
+                item.favorite = !item.favorite;
                 saveData();
-                renderAllItems();
                 renderItems();
-                showToast('บันทึก Favorite ไม่สำเร็จ', 'error');
             }
         }
 
@@ -1285,55 +1129,29 @@
         // --- GOOGLE SHEETS / DRIVE SYNC ---
         function saveGoogleConfig() {
             const url = document.getElementById('google-script-url').value.trim();
-            if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(url)) {
-                showToast('URL ของ Google Apps Script ไม่ถูกต้อง', 'warning');
-                return;
-            }
             googleScriptUrl = url;
             localStorage.setItem('google_script_url', url);
             showToast('บันทึก Web App URL แล้ว');
-            loadItemsFromGoogle(false);
         }
 
-        async function postGoogleAction(payload) {
-            if (!googleScriptUrl) throw new Error('ยังไม่ได้ตั้งค่า Google Apps Script URL');
-
-            // ใช้ application/x-www-form-urlencoded เพื่อหลีกเลี่ยง CORS preflight
-            const body = new URLSearchParams();
-            body.set('payload', JSON.stringify(payload));
-
-            await fetch(googleScriptUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                body
-            });
-
-            // no-cors อ่าน response ไม่ได้ จึงให้ Apps Script ทำงานก่อน แล้วค่อยอ่านสถานะจริงด้วย GET
-            await new Promise(resolve => setTimeout(resolve, 700));
-            const response = await fetch(googleScriptUrl + '?t=' + Date.now(), { cache: 'no-store' });
-            const data = await response.json();
-            if (data.status !== 'success') {
-                throw new Error(data.message || 'Google Apps Script error');
-            }
-            return data;
-        }
-
-        async function syncDataToGoogle() {
-            if (!googleScriptUrl) {
+        function syncDataToGoogle() {
+            if(!googleScriptUrl) {
                 showToast('กรุณากรอก Google Apps Script URL ก่อน', 'warning');
                 return;
             }
-            try {
-                isSyncing = true;
-                showToast('กำลังอ่านข้อมูลล่าสุดจาก Google...');
-                await loadItemsFromGoogle(false);
-                showToast('☁️ ข้อมูลล่าสุดจาก Google ถูกโหลดแล้ว');
-            } catch (error) {
-                console.error(error);
-                showToast('ซิงก์ Google ไม่สำเร็จ', 'error');
-            } finally {
-                isSyncing = false;
-            }
+
+            showToast('กำลังส่งข้อมูลไปยัง Google Sheets...');
+            
+            fetch(googleScriptUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "sync_items", items: items })
+            }).then(() => {
+                showToast('ส่งข้อมูลไปยัง Google Sheets เรียบร้อย!');
+            }).catch(err => {
+                showToast('เกิดข้อผิดพลาดในการซิงก์', 'error');
+            });
         }
 
         function toggleScriptGuide() {
@@ -1347,6 +1165,7 @@
             showToast('คัดลอกโค้ด Google Apps Script แล้ว');
         }
 
+        // --- UTILS ---
         function saveData() {
             localStorage.setItem('my_closet_items', JSON.stringify(items));
             localStorage.setItem('my_closet_outfits', JSON.stringify(outfits));
@@ -1354,40 +1173,37 @@
         }
 
         function updateCounts() {
+        
             document.getElementById('count-items').innerText = items.length;
             document.getElementById('count-outfits').innerText = outfits.length;
         }
 
-        async function loadItemsFromGoogle(showMessage = true) {
-            if (!googleScriptUrl) return;
+        async function loadItemsFromGoogle() {
+            if (!googleScriptUrl) {
+                console.log('ยังไม่ได้ตั้งค่า Google Apps Script URL');
+                return;
+            }
 
             try {
-                if (showMessage) showToast('กำลังโหลดข้อมูลจาก Google...');
-                const response = await fetch(googleScriptUrl + '?t=' + Date.now(), { cache: 'no-store' });
+                showToast('กำลังโหลดข้อมูลจาก Google...');
+
+                const response = await fetch(googleScriptUrl);
                 const data = await response.json();
 
                 if (data.status !== 'success') {
                     throw new Error(data.message || 'โหลดข้อมูลไม่สำเร็จ');
                 }
 
-                const localKeyExists = localStorage.getItem('my_closet_items') !== null;
-                const localItems = Array.isArray(items) ? [...items] : [];
-
-                // ถ้า Google ยังว่าง แต่เครื่องนี้เคยมีข้อมูลจริง ให้เสนอ/ทำ migration อัตโนมัติครั้งเดียว
-                if (Array.isArray(data.items) && data.items.length === 0 && localKeyExists && localItems.length > 0 && !localStorage.getItem('my_closet_migrated')) {
-                    const looksLikeDemoOnly = localItems.length === initialItems.length &&
-                        localItems.every((x, i) => String(x.id) === String(initialItems[i]?.id));
-                    if (!looksLikeDemoOnly) {
-                        await postGoogleAction({ action: 'sync_items', items: localItems });
-                        localStorage.setItem('my_closet_migrated', '1');
-                        return loadItemsFromGoogle(false);
-                    }
+                if (Array.isArray(data.items)) {
+                    items = data.items;
                 }
 
-                if (Array.isArray(data.items)) items = data.items;
-                if (Array.isArray(data.outfits)) outfits = data.outfits;
+                if (Array.isArray(data.outfits)) {
+                    outfits = data.outfits;
+                }
 
                 saveData();
+
                 renderAllItems();
                 renderItems();
                 renderOutfits();
@@ -1396,17 +1212,12 @@
                 renderCalendar();
                 updateCounts();
 
-                if (showMessage) showToast(`☁️ ซิงก์สำเร็จ เสื้อผ้า ${items.length} รายการ / Outfit ${outfits.length} ชุด`);
-                return data;
+                showToast(`☁️ ซิงก์สำเร็จ เสื้อผ้า ${items.length} รายการ / Outfit ${outfits.length} ชุด`);
+
             } catch (error) {
                 console.error('Google Load Error:', error);
-                if (showMessage) showToast('โหลดข้อมูลจาก Google ไม่สำเร็จ', 'error');
-                throw error;
+                showToast('โหลดข้อมูลจาก Google ไม่สำเร็จ', 'error');
             }
-        }
-
-        function makeId() {
-            return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
         }
 
         function showToast(msg, type = 'success') {
