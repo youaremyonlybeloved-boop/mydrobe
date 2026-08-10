@@ -1004,41 +1004,115 @@
 
 }
 
-        async function handleEditItem(e, id) {
-            e.preventDefault();
-            if (isSyncing) return;
+      async function handleEditItem(e, id) {
+    e.preventDefault();
 
-            const item = items.find(i => String(i.id) === String(id));
-            if (!item) return;
+    if (isSyncing) return;
 
-            const updatedItem = {
-                id: String(id),
-                title: document.getElementById('edit-item-title').value.trim(),
-                category: document.getElementById('edit-item-category').value,
-                brand: document.getElementById('edit-item-brand').value.trim() || 'My Wardrobe',
-                color: document.getElementById('edit-item-color').value.trim() || 'Basic',
-                favorite: !!item.favorite
+    const item = items.find(i => String(i.id) === String(id));
+    if (!item) return;
+
+    // อ่านข้อมูลจากฟอร์ม
+    const updatedItem = {
+        id: String(id),
+        title: document.getElementById('edit-item-title').value.trim(),
+        category: document.getElementById('edit-item-category').value,
+        brand: document.getElementById('edit-item-brand').value.trim() || 'My Wardrobe',
+        color: document.getElementById('edit-item-color').value.trim() || 'Basic',
+        favorite: !!item.favorite
+    };
+
+    // ถ้ามีการเลือกรูปใหม่
+    if (editUploadedImageBase64) {
+        updatedItem.image = editUploadedImageBase64;
+    }
+
+    isSyncing = true;
+
+    try {
+
+        // ==========================================
+        // 1. อัปเดตข้อมูลในหน้าเว็บทันที
+        // ==========================================
+        const index = items.findIndex(
+            i => String(i.id) === String(id)
+        );
+
+        if (index !== -1) {
+            items[index] = {
+                ...items[index],
+                ...updatedItem
             };
-
-            if (editUploadedImageBase64) updatedItem.image = editUploadedImageBase64;
-
-            isSyncing = true;
-            showToast('กำลังบันทึกการแก้ไข...');
-            try {
-                const result = await postGoogleAction({ action: 'update_item', item: updatedItem });
-                if (!result || result.status !== 'success') {
-                    throw new Error(result?.message || 'แก้ไขไม่สำเร็จ');
-                }
-                closeEditItemModal();
-                await loadItemsFromGoogle(false);
-                showToast('✅ แก้ไขสินค้าเรียบร้อยแล้ว');
-            } catch (error) {
-                console.error('Update Item Error:', error);
-                showToast('แก้ไขใน Google ไม่สำเร็จ', 'error');
-            } finally {
-                isSyncing = false;
-            }
         }
+
+        // เก็บ LocalStorage ทันที
+        saveData();
+
+        // ==========================================
+        // 2. Render หน้าเว็บทันที
+        // ==========================================
+        renderAllItems();
+        renderItems();
+        renderOutfits();
+        populateMixerDropdowns();
+        updateMixerCanvas();
+        renderCalendar();
+        updateCounts();
+
+        // ==========================================
+        // 3. ปิดหน้าต่างทันที
+        // ==========================================
+        closeEditItemModal();
+
+        // ถ้าเปิดจาก Detail ให้ปิด Detail ด้วย
+        const detailModal =
+            document.getElementById('item-detail-modal');
+
+        if (detailModal) {
+            detailModal.remove();
+        }
+
+        showToast('✅ แก้ไขสินค้าแล้ว');
+
+        // ==========================================
+        // 4. ส่งข้อมูลไป Google เบื้องหลัง
+        // ไม่ให้ผู้ใช้ต้องรอ
+        // ==========================================
+        postGoogleActionFast({
+            action: 'update_item',
+            item: updatedItem
+        }).catch(error => {
+
+            console.error(
+                'Background Update Error:',
+                error
+            );
+
+            showToast(
+                'บันทึกในเครื่องแล้ว แต่ Google อาจยังไม่อัปเดต',
+                'warning'
+            );
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Update Item Error:',
+            error
+        );
+
+        showToast(
+            'แก้ไขสินค้าไม่สำเร็จ',
+            'error'
+        );
+
+    } finally {
+
+        isSyncing = false;
+
+    }
+}
 
         // ==========================================
 // DELETE CONFIRM MODAL
@@ -1684,7 +1758,29 @@ async function deleteItem(id) {
             }
             return data;
         }
+            async function postGoogleActionFast(payload) {
 
+    if (!googleScriptUrl) {
+        throw new Error('ยังไม่ได้ตั้งค่า Google Apps Script URL');
+    }
+
+    const body = new URLSearchParams();
+
+    body.set(
+        'payload',
+        JSON.stringify(payload)
+    );
+
+    await fetch(googleScriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        body
+    });
+
+    return true;
+}
+
+        
         async function syncDataToGoogle() {
             if (!googleScriptUrl) {
                 showToast('กรุณากรอก Google Apps Script URL ก่อน', 'warning');
