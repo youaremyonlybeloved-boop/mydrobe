@@ -431,8 +431,18 @@
                             <input type="text" id="item-color" placeholder="เช่น Cream, Light Blue" class="w-full p-2.5 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-stone-400">
                         </div>
                         <div>
-                            <label class="text-xs font-semibold text-stone-700 mb-1 block">รูปภาพ (File หรือ URL)</label>
-                            <input type="file" id="item-file" accept="image/*" onchange="previewImageFile(event)" class="text-[10px] text-stone-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-stone-100 file:text-stone-700">
+                            <label class="text-xs font-semibold text-stone-700 mb-1 block">รูปภาพ</label>
+                            <label for="item-file" class="relative w-full h-[42px] rounded-xl border border-stone-200 bg-stone-50 text-stone-600 text-xs font-medium flex items-center justify-center gap-2 cursor-pointer active:bg-stone-100 overflow-hidden">
+                                <i class="fa-solid fa-image"></i>
+                                <span id="item-file-label">เลือกรูปภาพ</span>
+                                <input
+                                    type="file"
+                                    id="item-file"
+                                    accept="image/*"
+                                    onchange="previewImageFile(event)"
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                >
+                            </label>
                         </div>
                     </div>
 
@@ -808,7 +818,17 @@
                         </div>
                         <div>
                             <label class="text-xs font-semibold text-stone-700 mb-1 block">เปลี่ยนรูปภาพ (ไม่เลือก = ใช้รูปเดิม)</label>
-                            <input type="file" id="edit-item-file" accept="image/*" onchange="previewEditImageFile(event)" class="text-[10px] text-stone-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-stone-100 file:text-stone-700">
+                            <label for="edit-item-file" class="relative w-full h-[42px] rounded-xl border border-stone-200 bg-stone-50 text-stone-600 text-xs font-medium flex items-center justify-center gap-2 cursor-pointer active:bg-stone-100 overflow-hidden">
+                                <i class="fa-solid fa-image"></i>
+                                <span id="edit-item-file-label">เลือกรูปใหม่</span>
+                                <input
+                                    type="file"
+                                    id="edit-item-file"
+                                    accept="image/*"
+                                    onchange="previewEditImageFile(event)"
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                >
+                            </label>
                         </div>
                         <div class="w-full h-44 rounded-xl border border-dashed border-stone-300 bg-stone-50 flex items-center justify-center overflow-hidden">
                             <img id="edit-image-preview" src="${toImageUrl(item.image, 800)}" class="w-full h-full object-contain ${item.image ? '' : 'hidden'}">
@@ -839,19 +859,31 @@
 
         let editUploadedImageBase64 = '';
 
-        function previewEditImageFile(e) {
-            const file = e.target.files[0];
+        async function previewEditImageFile(e) {
+            const input = e.target;
+            const file = input.files && input.files[0];
             if (!file) return;
-            compressImageToDataUrl(file).then(dataUrl => {
+
+            const label = document.getElementById('edit-item-file-label');
+
+            try {
+                if (label) label.textContent = 'กำลังอ่านรูป...';
+
+                const dataUrl = await compressImageToDataUrl(file);
                 editUploadedImageBase64 = dataUrl;
+
                 const img = document.getElementById('edit-image-preview');
                 img.src = dataUrl;
                 img.classList.remove('hidden');
                 document.getElementById('edit-image-placeholder').classList.add('hidden');
-            }).catch(err => {
-                console.error(err);
-                showToast('อ่านรูปภาพไม่สำเร็จ', 'error');
-            });
+
+                if (label) label.textContent = 'เปลี่ยนรูปภาพ';
+            } catch (err) {
+                console.error('Edit image upload error:', err);
+                editUploadedImageBase64 = '';
+                if (label) label.textContent = 'เลือกรูปใหม่';
+                showToast('อ่านรูปภาพไม่สำเร็จ กรุณาเลือกรูปใหม่', 'error');
+            }
         }
 
         function closeEditItemModal() {
@@ -904,21 +936,42 @@
             uploadedImageBase64 = '';
             document.getElementById('image-preview').classList.add('hidden');
             document.getElementById('image-placeholder-text').classList.remove('hidden');
+
+            const fileLabel = document.getElementById('item-file-label');
+            if (fileLabel) fileLabel.textContent = 'เลือกรูปภาพ';
         }
 
-        function previewImageFile(e) {
-            const file = e.target.files[0];
+        async function previewImageFile(e) {
+            const input = e.target;
+            const file = input.files && input.files[0];
             if (!file) return;
-            compressImageToDataUrl(file).then(dataUrl => {
+
+            const label = document.getElementById('item-file-label');
+
+            try {
+                if (label) label.textContent = 'กำลังอ่านรูป...';
+
+                const dataUrl = await compressImageToDataUrl(file);
                 uploadedImageBase64 = dataUrl;
+
                 const preview = document.getElementById('image-preview');
                 preview.src = dataUrl;
                 preview.classList.remove('hidden');
                 document.getElementById('image-placeholder-text').classList.add('hidden');
-            }).catch(err => {
-                console.error(err);
-                showToast('อ่านรูปภาพไม่สำเร็จ', 'error');
-            });
+
+                if (label) label.textContent = 'เปลี่ยนรูปภาพ';
+            } catch (err) {
+                console.error('Image upload error:', err);
+                uploadedImageBase64 = '';
+
+                const preview = document.getElementById('image-preview');
+                preview.src = '';
+                preview.classList.add('hidden');
+                document.getElementById('image-placeholder-text').classList.remove('hidden');
+
+                if (label) label.textContent = 'เลือกรูปภาพ';
+                showToast('อ่านรูปภาพไม่สำเร็จ กรุณาเลือกรูปใหม่', 'error');
+            }
         }
 
         async function handleAddItem(e) {
