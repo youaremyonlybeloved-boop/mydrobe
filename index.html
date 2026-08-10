@@ -1680,31 +1680,43 @@ async function deleteItem(id) {
 
     try {
 
-        // ลบจาก Google Sheets
-        const result = await postGoogleAction({
-            action: 'delete_outfit',
-            id: String(id)
-        });
+      // ลบออกจากหน้าจอทันที
+outfits = outfits.filter(
+    o => String(o.id) !== String(id)
+);
 
+saveData();
+renderOutfits();
+updateCounts();
 
-        if (!result || result.status !== 'success') {
-            throw new Error(
-                result?.message || 'ลบเซ็ตแต่งตัวไม่สำเร็จ'
-            );
-        }
+showToast('ลบชุดแต่งตัวแล้ว');
 
+// ลบจาก Google Sheets เบื้องหลัง
+try {
+    const result = await postGoogleAction({
+        action: 'delete_outfit',
+        id: String(id)
+    });
 
-        // ลบออกจากข้อมูลในเครื่อง
-        outfits = outfits.filter(
-            o => String(o.id) !== String(id)
+    if (!result || result.status !== 'success') {
+        throw new Error(
+            result?.message || 'ลบเซ็ตแต่งตัวไม่สำเร็จ'
         );
+    }
 
+} catch (error) {
+    console.error('Delete Outfit Error:', error);
 
-        saveData();
+    showToast(
+        'ลบจาก Google ไม่สำเร็จ กรุณาลองใหม่',
+        'error'
+    );
 
-        renderOutfits();
+    await syncDataFromGoogle();
 
-        updateCounts();
+} finally {
+    isSyncing = false;
+}
 
 
         // ปิดหน้า Detail ถ้าเปิดอยู่
