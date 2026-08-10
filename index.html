@@ -1225,85 +1225,112 @@ function showDeleteConfirm(itemName) {
 // ==========================================
 
 async function deleteItem(id) {
-
     const item = items.find(
         i => String(i.id) === String(id)
     );
 
     if (!item || isSyncing) return;
 
+    // =====================================
+    // 1. ถามยืนยันก่อนลบ
+    // =====================================
 
-    // เปิดหน้าต่างถามก่อนลบ
-    const confirmed = await showDeleteConfirm(
-        item.title || 'รายการนี้'
+    const confirmed = confirm(
+        `ต้องการลบ "${item.title || 'รายการนี้'}" ใช่หรือไม่?\n\nรายการจะถูกลบจากตู้เสื้อผ้า`
     );
 
-
-    // ถ้ากดยกเลิก
     if (!confirmed) return;
 
 
     isSyncing = true;
 
-    showToast('กำลังลบสินค้า...');
+
+    // =====================================
+    // 2. ลบจากหน้าเว็บทันที
+    // =====================================
+
+    items = items.filter(
+        i => String(i.id) !== String(id)
+    );
 
 
-    try {
+    // =====================================
+    // 3. บันทึก LocalStorage ทันที
+    // =====================================
 
-        const result = await postGoogleAction({
-            action: 'delete_item',
-            id: String(id)
-        });
-
-
-        if (!result || result.status !== 'success') {
-
-            throw new Error(
-                result?.message || 'ลบไม่สำเร็จ'
-            );
-        }
+    saveData();
 
 
-        // ปิดรายละเอียดสินค้า
-        const detail =
-            document.getElementById('item-detail-modal');
+    // =====================================
+    // 4. อัปเดตหน้าจอทันที
+    // =====================================
 
-        if (detail) {
-            detail.remove();
-        }
+    renderAllItems();
+    renderItems();
+    renderOutfits();
 
-
-        // ปิดหน้าแก้ไข ถ้ามี
-        closeEditItemModal();
-
-
-        // โหลดข้อมูลล่าสุดจาก Google
-        await loadItemsFromGoogle(false);
+    populateMixerDropdowns();
+    updateMixerCanvas();
+    renderCalendar();
+    updateCounts();
 
 
-        showToast(
-            '✅ ลบสินค้าเรียบร้อยแล้ว'
+    // =====================================
+    // 5. ปิดหน้าต่างรายละเอียดทันที
+    // =====================================
+
+    const detailModal =
+        document.getElementById('item-detail-modal');
+
+    if (detailModal) {
+        detailModal.remove();
+    }
+
+
+    // ถ้ามี Edit Modal เปิดอยู่
+    closeEditItemModal();
+
+
+    // =====================================
+    // 6. แจ้งผู้ใช้ทันที
+    // =====================================
+
+    showToast('✅ ลบสินค้าแล้ว');
+
+
+    // =====================================
+    // 7. ลบจาก Google เบื้องหลัง
+    // =====================================
+
+    postGoogleActionFast({
+        action: 'delete_item',
+        id: String(id)
+    })
+    .then(() => {
+
+        console.log(
+            'Delete Item synced to Google successfully'
         );
 
-
-    } catch (error) {
+    })
+    .catch(error => {
 
         console.error(
-            'Delete Item Error:',
+            'Background Delete Error:',
             error
         );
 
         showToast(
-            'ลบสินค้าไม่สำเร็จ',
-            'error'
+            'ลบจากเครื่องแล้ว แต่ Google อาจยังไม่อัปเดต',
+            'warning'
         );
 
-
-    } finally {
+    })
+    .finally(() => {
 
         isSyncing = false;
 
-    }
+    });
 }
 
         async function toggleFavorite(id) {
