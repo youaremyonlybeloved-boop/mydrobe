@@ -658,7 +658,7 @@
             const item = items.find(i => String(i.id) === String(itemId));
             if (!item) return;
 
-            const imageUrl = toImageUrl(item.image, 1200);
+            const imageUrl = toImageUrl(item.image, 800);
             const modal = document.createElement('div');
             modal.id = 'item-detail-modal';
             modal.className = 'fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4';
