@@ -1476,6 +1476,392 @@ async function deleteItem(id) {
             }
         }
 
+// ==========================================
+// OUTFIT IMAGE PICKER
+// เลือกเสื้อผ้าจากรูปภาพ
+// ==========================================
+
+function openOutfitPicker(slot) {
+
+    // ป้องกันหน้าต่างซ้ำ
+    const oldPicker = document.getElementById('outfit-picker-modal');
+    if (oldPicker) oldPicker.remove();
+
+    const slotNames = {
+        glasses: 'แว่นตา',
+        shirt: 'เสื้อ',
+        jacket: 'แจ็คเก็ต / คาร์ดิแกน',
+        pants: 'กางเกง / กระโปรง',
+        shoes: 'รองเท้า'
+    };
+
+    const slotName = slotNames[slot] || 'สินค้า';
+
+    // สินค้าที่ตรงกับหมวด
+    const filteredItems = items.filter(item => {
+
+        if (slot === 'shirt') {
+            return item.category === 'shirt' ||
+                   item.category === 'tshirt';
+        }
+
+        return item.category === slot;
+    });
+
+    const modal = document.createElement('div');
+
+    modal.id = 'outfit-picker-modal';
+
+    modal.className =
+        'fixed inset-0 z-[10000] bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-6';
+
+    modal.innerHTML = `
+
+        <div class="
+            bg-white
+            w-full
+            max-w-4xl
+            max-h-[92vh]
+            overflow-hidden
+            rounded-t-3xl
+            md:rounded-3xl
+            shadow-2xl
+            flex
+            flex-col
+        ">
+
+            <!-- HEADER -->
+            <div class="
+                flex
+                items-center
+                justify-between
+                px-5
+                py-4
+                border-b
+                border-stone-100
+            ">
+
+                <div>
+                    <h3 class="text-lg font-bold text-stone-900">
+                        เลือก${slotName}
+                    </h3>
+
+                    <p class="text-xs text-stone-400 mt-0.5">
+                        แตะรูปสินค้าเพื่อเลือก
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="close-outfit-picker"
+                    class="
+                        w-10
+                        h-10
+                        rounded-full
+                        bg-stone-100
+                        flex
+                        items-center
+                        justify-center
+                        text-stone-600
+                        hover:bg-stone-200
+                    "
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+
+            <!-- SEARCH -->
+            <div class="px-5 pt-4">
+
+                <div class="
+                    flex
+                    items-center
+                    gap-2
+                    bg-stone-50
+                    border
+                    border-stone-200
+                    rounded-xl
+                    px-3
+                    py-2.5
+                ">
+
+                    <i class="fa-solid fa-magnifying-glass text-stone-400"></i>
+
+                    <input
+                        id="outfit-picker-search"
+                        type="text"
+                        placeholder="ค้นหาชื่อสินค้า หรือแบรนด์..."
+                        class="
+                            w-full
+                            bg-transparent
+                            outline-none
+                            text-sm
+                        "
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- PRODUCT GRID -->
+            <div
+                id="outfit-picker-grid"
+                class="
+                    flex-1
+                    overflow-y-auto
+                    p-5
+                "
+            >
+
+                <div
+                    class="
+                        grid
+                        grid-cols-3
+                        sm:grid-cols-4
+                        md:grid-cols-5
+                        gap-3
+                    "
+                >
+
+                    ${filteredItems.map(item => `
+
+                        <button
+                            type="button"
+                            class="
+                                outfit-picker-item
+                                text-left
+                                rounded-2xl
+                                border
+                                border-stone-200
+                                bg-white
+                                overflow-hidden
+                                hover:border-stone-500
+                                hover:shadow-md
+                                transition
+                            "
+                            data-id="${String(item.id)}"
+                        >
+
+                            <div
+                                class="
+                                    aspect-square
+                                    bg-[#F7F5F0]
+                                    flex
+                                    items-center
+                                    justify-center
+                                    overflow-hidden
+                                "
+                            >
+
+                                <img
+                                    src="${toImageUrl(item.image, 500)}"
+                                    alt="${escapeHtml(item.title || '')}"
+                                    loading="lazy"
+                                    decoding="async"
+                                    class="
+                                        w-full
+                                        h-full
+                                        object-contain
+                                        p-2
+                                    "
+                                    onerror="
+                                        this.src='https://placehold.co/500x500/F3EFEA/A8A29E?text=No+Image'
+                                    "
+                                >
+
+                            </div>
+
+                            <div class="p-2.5">
+
+                                <div
+                                    class="
+                                        text-xs
+                                        font-semibold
+                                        text-stone-800
+                                        truncate
+                                    "
+                                >
+                                    ${escapeHtml(item.title || 'ไม่มีชื่อ')}
+                                </div>
+
+                                <div
+                                    class="
+                                        text-[10px]
+                                        text-stone-400
+                                        truncate
+                                        mt-0.5
+                                    "
+                                >
+                                    ${escapeHtml(item.brand || '')}
+                                </div>
+
+                            </div>
+
+                        </button>
+
+                    `).join('')}
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+
+    // ==========================================
+    // ปิดหน้าต่าง
+    // ==========================================
+
+    document
+        .getElementById('close-outfit-picker')
+        .onclick = () => modal.remove();
+
+
+    // ==========================================
+    // คลิกพื้นหลังเพื่อปิด
+    // ==========================================
+
+    modal.addEventListener('click', function(e) {
+
+        if (e.target === modal) {
+            modal.remove();
+        }
+
+    });
+
+
+    // ==========================================
+    // เลือกสินค้า
+    // ==========================================
+
+    modal
+        .querySelectorAll('.outfit-picker-item')
+        .forEach(button => {
+
+            button.addEventListener('click', function() {
+
+                const selectedId =
+                    String(this.dataset.id);
+
+                const select =
+                    document.getElementById(
+                        `select-${slot}`
+                    );
+
+                if (!select) return;
+
+                // ใส่ ID ลง select เดิม
+                select.value = selectedId;
+
+                // อัปเดต Canvas เดิม
+                updateMixerCanvas();
+
+                // อัปเดตข้อความปุ่ม
+                const item =
+                    items.find(
+                        i =>
+                            String(i.id) ===
+                            selectedId
+                    );
+
+                if (item && slot === 'shirt') {
+
+                    const label =
+                        document.getElementById(
+                            'shirt-picker-label'
+                        );
+
+                    if (label) {
+
+                        label.innerHTML =
+                            `👕 ${escapeHtml(
+                                item.title || 'เลือกแล้ว'
+                            )}`;
+
+                        label.classList.remove(
+                            'text-stone-500'
+                        );
+
+                        label.classList.add(
+                            'text-stone-800',
+                            'font-medium'
+                        );
+
+                    }
+
+                }
+
+                // ปิดหน้าต่างทันที
+                modal.remove();
+
+            });
+
+        });
+
+
+    // ==========================================
+    // SEARCH
+    // ==========================================
+
+    const searchInput =
+        document.getElementById(
+            'outfit-picker-search'
+        );
+
+    if (searchInput) {
+
+        searchInput.addEventListener(
+            'input',
+            function() {
+
+                const keyword =
+                    this.value
+                        .trim()
+                        .toLowerCase();
+
+                modal
+                    .querySelectorAll(
+                        '.outfit-picker-item'
+                    )
+                    .forEach(button => {
+
+                        const id =
+                            button.dataset.id;
+
+                        const item =
+                            items.find(
+                                i =>
+                                    String(i.id) ===
+                                    String(id)
+                            );
+
+                        if (!item) return;
+
+                        const text =
+                            `${item.title || ''} ${item.brand || ''}`
+                                .toLowerCase();
+
+                        button.style.display =
+                            text.includes(keyword)
+                                ? ''
+                                : 'none';
+
+                    });
+
+            }
+        );
+
+    }
+
+}
+
+        
         // --- MIX & MATCH OUTFIT CANVAS ---
         function populateMixerDropdowns() {
             const categories = ['glasses', 'shirt', 'jacket', 'pants', 'shoes'];
