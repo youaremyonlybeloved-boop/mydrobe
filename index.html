@@ -581,7 +581,7 @@
                 card.className = "bg-[#EFECE6] rounded-2xl p-2 h-48 md:h-56 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-md transition border border-stone-200/40";
                 card.onclick = () => openItemDetail(item.id);
 
-                const imageUrl = toImageUrl(item.image, 1000);
+                const imageUrl = toImageUrl(item.image, 400);
 
                 card.innerHTML = `
                     <img src="${imageUrl}" alt="${item.title}" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
@@ -637,7 +637,7 @@
                     </button>
                     
                     <div onclick="openItemDetail('${item.id}')" class="w-full h-36 rounded-xl bg-[#F7F5F0] overflow-hidden mb-2 flex items-center justify-center cursor-pointer">
-                        <img src="${toImageUrl(item.image, 1000)}" alt="${escapeHtml(item.title)}" class="w-full h-full object-contain p-2 hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
+                        <img src="${toImageUrl(item.image, 400)}" loading="lazy" decoding="async" alt="${escapeHtml(item.title)}" class="w-full h-full object-contain p-2 hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/300x300/F3EFEA/A8A29E?text=No+Image'">
                     </div>
 
                     <div class="space-y-1">
@@ -658,7 +658,7 @@
             const item = items.find(i => String(i.id) === String(itemId));
             if (!item) return;
 
-            const imageUrl = toImageUrl(item.image, 2000);
+            const imageUrl = toImageUrl(item.image, 1200);
             const modal = document.createElement('div');
             modal.id = 'item-detail-modal';
             modal.className = 'fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4';
