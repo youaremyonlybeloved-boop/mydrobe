@@ -886,10 +886,7 @@
 
     if (isSyncing) return;
 
-    // ==========================================
-    // 1. อ่านข้อมูลจากฟอร์ม
-    // ==========================================
-
+    // อ่านข้อมูลจากฟอร์ม
     const title =
         document.getElementById('item-title').value.trim();
 
@@ -902,80 +899,44 @@
     const color =
         document.getElementById('item-color').value.trim();
 
-
-    // ==========================================
-    // 2. สร้างสินค้าใหม่
-    // ==========================================
-
+    // สร้างสินค้าใหม่
     const newItem = {
         id: makeId(),
-
-        title,
-
-        category,
-
+        title: title,
+        category: category,
         brand: brand || 'My Wardrobe',
-
         color: color || 'Basic',
-
-        // สำคัญมาก:
-        // เก็บรูปไว้ใน newItem ก่อนปิด Modal
         image: uploadedImageBase64 || '',
-
         favorite: false
     };
 
-
     isSyncing = true;
 
-
-    // ==========================================
-    // 3. เพิ่มสินค้าในหน้าเว็บทันที
-    // ==========================================
+    // =====================================
+    // เพิ่มสินค้าในหน้าเว็บทันที
+    // =====================================
 
     items.unshift(newItem);
 
     saveData();
 
-
-    // ==========================================
-    // 4. Render หน้าเว็บทันที
-    // ==========================================
-
+    // อัปเดตหน้าจอทันที
     renderAllItems();
     renderItems();
-    renderOutfits();
-
-    populateMixerDropdowns();
-    updateMixerCanvas();
-    renderCalendar();
     updateCounts();
 
-
-    // ==========================================
-    // 5. ปิดหน้าต่างทันที
-    // ==========================================
-
+    // ปิดหน้าต่างทันที
     closeAddItemModal();
-
 
     showToast('✅ เพิ่มสินค้าแล้ว');
 
-
-    // ==========================================
-    // 6. ส่งไป Google เบื้องหลัง
-    // ==========================================
+    // =====================================
+    // ส่งข้อมูลไป Google เบื้องหลัง
+    // =====================================
 
     postGoogleActionFast({
         action: 'add_item',
         item: newItem
-
-    }).then(() => {
-
-        console.log(
-            'Add Item synced to Google successfully'
-        );
-
     }).catch(error => {
 
         console.error(
@@ -993,38 +954,6 @@
         isSyncing = false;
 
     });
-}
-
-
-        // โหลดข้อมูลล่าสุดจาก Google
-        // หลังจากบันทึกสำเร็จ
-        await loadItemsFromGoogle(false);
-
-
-        showToast(
-            '✅ เพิ่มสินค้าเรียบร้อยแล้ว'
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            'Add Item Error:',
-            error
-        );
-
-
-        showToast(
-            'บันทึก Google ไม่สำเร็จ กรุณาลองอีกครั้ง',
-            'error'
-        );
-
-
-    } finally {
-
-        isSyncing = false;
-
-    }
 
 }
 
