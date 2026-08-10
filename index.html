@@ -1349,9 +1349,12 @@ async function deleteItem(id) {
                                 <span class="text-stone-400">Style :</span> ${outfit.occasion}
                             </span>
                         </div>
-                        <button onclick="deleteOutfit('${outfit.id}')" class="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center hover:bg-rose-600">
-                            <i class="fa-solid fa-trash-can text-[10px]"></i>
-                        </button>
+                        <button
+    onclick="event.stopPropagation(); deleteOutfit('${outfit.id}')"
+    class="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center hover:bg-rose-600"
+>
+    <i class="fa-solid fa-trash-can text-[10px]"></i>
+</button>
                     </div>
                     <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
                         ${itemThumbsHtml}
@@ -1412,28 +1415,94 @@ async function deleteItem(id) {
         }
 
         async function deleteOutfit(id) {
-            outfits = outfits.filter(o => String(o.id) !== String(id));
-            saveData();
-            renderOutfits();
-            updateCounts();
 
-            if (googleScriptUrl) {
-                try {
-                    await fetch(googleScriptUrl, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'delete_outfit', id: String(id) })
-                    });
-                    showToast('ลบเซ็ตแต่งตัวแล้ว');
-                } catch (error) {
-                    console.error(error);
-                    showToast('ลบในเครื่องแล้ว แต่ยังซิงก์ Google Sheets ไม่สำเร็จ', 'error');
-                }
-            } else {
-                showToast('ลบเซ็ตแต่งตัวแล้ว');
-            }
+    const outfit = outfits.find(
+        o => String(o.id) === String(id)
+    );
+
+    if (!outfit || isSyncing) return;
+
+
+    // ==============================
+    // ถามยืนยันก่อนลบ
+    // ==============================
+
+    const confirmed = await showDeleteConfirm(
+        outfit.name || 'เซ็ตแต่งตัวนี้'
+    );
+
+
+    // กดยกเลิก
+    if (!confirmed) return;
+
+
+    isSyncing = true;
+
+    showToast('กำลังลบเซ็ตแต่งตัว...');
+
+
+    try {
+
+        // ลบจาก Google Sheets
+        const result = await postGoogleAction({
+            action: 'delete_outfit',
+            id: String(id)
+        });
+
+
+        if (!result || result.status !== 'success') {
+            throw new Error(
+                result?.message || 'ลบเซ็ตแต่งตัวไม่สำเร็จ'
+            );
         }
+
+
+        // ลบออกจากข้อมูลในเครื่อง
+        outfits = outfits.filter(
+            o => String(o.id) !== String(id)
+        );
+
+
+        saveData();
+
+        renderOutfits();
+
+        updateCounts();
+
+
+        // ปิดหน้า Detail ถ้าเปิดอยู่
+        const detail =
+            document.getElementById('outfit-detail-modal');
+
+        if (detail) {
+            detail.remove();
+        }
+
+
+        showToast(
+            '✅ ลบเซ็ตแต่งตัวเรียบร้อยแล้ว'
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            'Delete Outfit Error:',
+            error
+        );
+
+        showToast(
+            'ลบเซ็ตแต่งตัวไม่สำเร็จ',
+            'error'
+        );
+
+
+    } finally {
+
+        isSyncing = false;
+
+    }
+}
 
         // --- CALENDAR PLANNER ---
         function renderCalendar() {
