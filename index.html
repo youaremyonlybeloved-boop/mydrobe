@@ -882,15 +882,13 @@
         }
 
         async function handleAddItem(e) {
-
     e.preventDefault();
 
     if (isSyncing) return;
 
-
-    // ==============================
-    // อ่านข้อมูลจากฟอร์ม
-    // ==============================
+    // ==========================================
+    // 1. อ่านข้อมูลจากฟอร์ม
+    // ==========================================
 
     const title =
         document.getElementById('item-title').value.trim();
@@ -905,12 +903,11 @@
         document.getElementById('item-color').value.trim();
 
 
-    // ==============================
-    // สร้างข้อมูลสินค้า
-    // ==============================
+    // ==========================================
+    // 2. สร้างสินค้าใหม่
+    // ==========================================
 
     const newItem = {
-
         id: makeId(),
 
         title,
@@ -921,55 +918,82 @@
 
         color: color || 'Basic',
 
-        // สำคัญ:
-        // เก็บรูปไว้ในตัวแปร newItem ก่อนปิดหน้าต่าง
+        // สำคัญมาก:
+        // เก็บรูปไว้ใน newItem ก่อนปิด Modal
         image: uploadedImageBase64 || '',
 
         favorite: false
     };
 
 
-    // ==============================
-    // เริ่มบันทึก
-    // ==============================
-
     isSyncing = true;
 
 
-    // ==============================
-    // ปิดหน้าต่างทันที
-    // ไม่ต้องรอ Google
-    // ==============================
+    // ==========================================
+    // 3. เพิ่มสินค้าในหน้าเว็บทันที
+    // ==========================================
+
+    items.unshift(newItem);
+
+    saveData();
+
+
+    // ==========================================
+    // 4. Render หน้าเว็บทันที
+    // ==========================================
+
+    renderAllItems();
+    renderItems();
+    renderOutfits();
+
+    populateMixerDropdowns();
+    updateMixerCanvas();
+    renderCalendar();
+    updateCounts();
+
+
+    // ==========================================
+    // 5. ปิดหน้าต่างทันที
+    // ==========================================
 
     closeAddItemModal();
 
 
-    // แจ้งว่ากำลังบันทึกอยู่เบื้องหลัง
-    showToast('กำลังบันทึกสินค้า...');
+    showToast('✅ เพิ่มสินค้าแล้ว');
 
 
-    // ==============================
-    // ส่งข้อมูลไป Google เบื้องหลัง
-    // ==============================
+    // ==========================================
+    // 6. ส่งไป Google เบื้องหลัง
+    // ==========================================
 
-    try {
+    postGoogleActionFast({
+        action: 'add_item',
+        item: newItem
 
-        const result = await postGoogleAction({
+    }).then(() => {
 
-            action: 'add_item',
+        console.log(
+            'Add Item synced to Google successfully'
+        );
 
-            item: newItem
+    }).catch(error => {
 
-        });
+        console.error(
+            'Background Add Item Error:',
+            error
+        );
 
+        showToast(
+            'เพิ่มสินค้าแล้ว แต่ Google อาจยังบันทึกไม่สำเร็จ',
+            'warning'
+        );
 
-        if (!result || result.status !== 'success') {
+    }).finally(() => {
 
-            throw new Error(
-                result?.message || 'บันทึกไม่สำเร็จ'
-            );
+        isSyncing = false;
 
-        }
+    });
+}
 
 
         // โหลดข้อมูลล่าสุดจาก Google
