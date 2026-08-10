@@ -882,41 +882,127 @@
         }
 
         async function handleAddItem(e) {
-            e.preventDefault();
-            if (isSyncing) return;
 
-            const title = document.getElementById('item-title').value.trim();
-            const category = document.getElementById('item-category').value;
-            const brand = document.getElementById('item-brand').value.trim();
-            const color = document.getElementById('item-color').value.trim();
+    e.preventDefault();
 
-            const newItem = {
-                id: makeId(),
-                title,
-                category,
-                brand: brand || 'My Wardrobe',
-                color: color || 'Basic',
-                image: uploadedImageBase64 || '',
-                favorite: false
-            };
+    if (isSyncing) return;
 
-            isSyncing = true;
-            showToast('กำลังบันทึกสินค้า...');
-            try {
-                const result = await postGoogleAction({ action: 'add_item', item: newItem });
-                if (!result || result.status !== 'success') {
-                    throw new Error(result?.message || 'บันทึกไม่สำเร็จ');
-                }
-                closeAddItemModal();
-                await loadItemsFromGoogle(false);
-                showToast('✅ เพิ่มสินค้าและบันทึกลง Google แล้ว');
-            } catch (error) {
-                console.error('Add Item Error:', error);
-                showToast('บันทึก Google ไม่สำเร็จ กรุณาลองอีกครั้ง', 'error');
-            } finally {
-                isSyncing = false;
-            }
+
+    // ==============================
+    // อ่านข้อมูลจากฟอร์ม
+    // ==============================
+
+    const title =
+        document.getElementById('item-title').value.trim();
+
+    const category =
+        document.getElementById('item-category').value;
+
+    const brand =
+        document.getElementById('item-brand').value.trim();
+
+    const color =
+        document.getElementById('item-color').value.trim();
+
+
+    // ==============================
+    // สร้างข้อมูลสินค้า
+    // ==============================
+
+    const newItem = {
+
+        id: makeId(),
+
+        title,
+
+        category,
+
+        brand: brand || 'My Wardrobe',
+
+        color: color || 'Basic',
+
+        // สำคัญ:
+        // เก็บรูปไว้ในตัวแปร newItem ก่อนปิดหน้าต่าง
+        image: uploadedImageBase64 || '',
+
+        favorite: false
+    };
+
+
+    // ==============================
+    // เริ่มบันทึก
+    // ==============================
+
+    isSyncing = true;
+
+
+    // ==============================
+    // ปิดหน้าต่างทันที
+    // ไม่ต้องรอ Google
+    // ==============================
+
+    closeAddItemModal();
+
+
+    // แจ้งว่ากำลังบันทึกอยู่เบื้องหลัง
+    showToast('กำลังบันทึกสินค้า...');
+
+
+    // ==============================
+    // ส่งข้อมูลไป Google เบื้องหลัง
+    // ==============================
+
+    try {
+
+        const result = await postGoogleAction({
+
+            action: 'add_item',
+
+            item: newItem
+
+        });
+
+
+        if (!result || result.status !== 'success') {
+
+            throw new Error(
+                result?.message || 'บันทึกไม่สำเร็จ'
+            );
+
         }
+
+
+        // โหลดข้อมูลล่าสุดจาก Google
+        // หลังจากบันทึกสำเร็จ
+        await loadItemsFromGoogle(false);
+
+
+        showToast(
+            '✅ เพิ่มสินค้าเรียบร้อยแล้ว'
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            'Add Item Error:',
+            error
+        );
+
+
+        showToast(
+            'บันทึก Google ไม่สำเร็จ กรุณาลองอีกครั้ง',
+            'error'
+        );
+
+
+    } finally {
+
+        isSyncing = false;
+
+    }
+
+}
 
         async function handleEditItem(e, id) {
             e.preventDefault();
