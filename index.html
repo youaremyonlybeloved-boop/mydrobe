@@ -680,8 +680,22 @@
                 return;
             }
 
-            items.forEach(item => {
-                const card = document.createElement('div');
+            const categoryOrder = {
+    tshirt: 1,
+    shirt: 2,
+    jacket: 3,
+    pants: 4,
+    glasses: 5,
+    shoes: 6
+};
+
+const sortedItems = [...items].sort((a, b) => {
+    return (categoryOrder[a.category] || 99) -
+           (categoryOrder[b.category] || 99);
+});
+
+sortedItems.forEach(item => {
+    const card = document.createElement('div');
                 card.className = "bg-[#EFECE6] rounded-2xl p-2 h-48 md:h-56 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-md transition border border-stone-200/40";
                 card.onclick = () => openItemDetail(item.id);
 
