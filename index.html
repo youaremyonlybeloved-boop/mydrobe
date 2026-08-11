@@ -117,22 +117,22 @@
                             ทั้งหมด
                         </button>
                         <button onclick="filterCategory('tshirt')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            👕 เสื้อ <span id="count-tshirt">(0)</span>
+                            👕 เสื้อ
                         </button>
                         <button onclick="filterCategory('shirt')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            👔 เสื้อเชิ้ต <span id="count-shirt">(0)</span>
+                            👔 เสื้อเชิ้ต
                         </button>
                         <button onclick="filterCategory('jacket')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            🧥 แจ็คเก็ต <span id="count-jacket">(0)</span>
+                            🧥 แจ็คเก็ต
                         </button>
                         <button onclick="filterCategory('pants')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            👖 กางเกง <span id="count-pants">(0)</span>
+                            👖 กางเกง
                         </button>
                         <button onclick="filterCategory('glasses')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            🕶️ แว่นตา <span id="count-glasses">(0)</span>
+                            🕶️ แว่นตา
                         </button>
                         <button onclick="filterCategory('shoes')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            👟 รองเท้า <span id="count-shoes">(0)</span>
+                            👟 รองเท้า
                         </button>
                     </div>
 
@@ -172,21 +172,26 @@
                     <!-- Visual Mix Canvas Board -->
                     <div class="relative w-full bg-[#F5F2EC] rounded-2xl p-4 min-h-[360px] flex flex-col justify-between items-center overflow-hidden border border-stone-200">
                         <div class="w-full flex justify-between items-center z-10 px-2">
-                            <div id="canvas-glasses" onclick="openOutfitPicker('glasses')" class="w-20 h-20 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative group cursor-pointer">                                <span class="text-stone-300 text-xs">แว่นตา</span>
+                            <div id="canvas-glasses" class="w-20 h-20 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative group">
+                                <span class="text-stone-300 text-xs">แว่นตา</span>
                             </div>
-                            <div id="canvas-jacket" onclick="openOutfitPicker('jacket')" class="w-24 h-24 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative group cursor-pointer">                                <span class="text-stone-300 text-xs">แจ็คเก็ต</span>
+                            <div id="canvas-jacket" class="w-24 h-24 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative group">
+                                <span class="text-stone-300 text-xs">แจ็คเก็ต</span>
                             </div>
                         </div>
 
                         <div class="flex flex-col items-center gap-2 my-2 z-10">
-                            <div id="canvas-shirt" onclick="openOutfitPicker('shirt')" class="w-32 h-32 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative cursor-pointer">                                <span class="text-stone-300 text-xs">เสื้อยืด / เชิ้ต</span>
+                            <div id="canvas-shirt" class="w-32 h-32 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative">
+                                <span class="text-stone-300 text-xs">เสื้อยืด / เชิ้ต</span>
                             </div>
-                            <div id="canvas-pants" onclick="openOutfitPicker('pants')" class="w-36 h-36 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative cursor-pointer">                                <span class="text-stone-300 text-xs">กางเกง</span>
+                            <div id="canvas-pants" class="w-36 h-36 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative">
+                                <span class="text-stone-300 text-xs">กางเกง</span>
                             </div>
                         </div>
 
                         <div class="w-full flex justify-center z-10">
-                            <div id="canvas-shoes" onclick="openOutfitPicker('shoes')" class="w-28 h-20 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative cursor-pointer">                                <span class="text-stone-300 text-xs">รองเท้า</span>
+                            <div id="canvas-shoes" class="w-28 h-20 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative">
+                                <span class="text-stone-300 text-xs">รองเท้า</span>
                             </div>
                         </div>
                     </div>
@@ -2471,40 +2476,10 @@ try {
             localStorage.setItem('my_closet_calendar', JSON.stringify(calendarPlan));
         }
 
-        {
-    // จำนวนสินค้าทั้งหมด
-    document.getElementById('count-items').innerText = items.length;
-
-    // จำนวนชุดที่บันทึก
-    document.getElementById('count-outfits').innerText = outfits.length;
-
-    // นับจำนวนสินค้าแต่ละหมวด
-    const categoryCounts = {
-        tshirt: items.filter(item => item.category === 'tshirt').length,
-        shirt: items.filter(item => item.category === 'shirt').length,
-        jacket: items.filter(item => item.category === 'jacket').length,
-        pants: items.filter(item => item.category === 'pants').length,
-        glasses: items.filter(item => item.category === 'glasses').length,
-        shoes: items.filter(item => item.category === 'shoes').length
-    };
-
-    // แสดงจำนวนบนปุ่มหมวดหมู่
-    const countElements = {
-        tshirt: document.getElementById('count-tshirt'),
-        shirt: document.getElementById('count-shirt'),
-        jacket: document.getElementById('count-jacket'),
-        pants: document.getElementById('count-pants'),
-        glasses: document.getElementById('count-glasses'),
-        shoes: document.getElementById('count-shoes')
-    };
-
-    Object.keys(categoryCounts).forEach(category => {
-        if (countElements[category]) {
-            countElements[category].innerText =
-                `(${categoryCounts[category]})`;
+        function updateCounts() {
+            document.getElementById('count-items').innerText = items.length;
+            document.getElementById('count-outfits').innerText = outfits.length;
         }
-    });
-}
 
         async function loadItemsFromGoogle(showMessage = true) {
             if (!googleScriptUrl) return;
