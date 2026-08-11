@@ -148,15 +148,7 @@
                     <!-- Search Input -->
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-stone-400 text-sm"></i>
-                        <input type="text" id="search-input" oninput="renderItems(); toggleClearSearch()" placeholder="ค้นหาเสื้อผ้า, แบรนด์, สี..." class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-stone-200 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-stone-400">
-
-                        <button
-    type="button"
-    id="clear-search"
-    onclick="clearSearchInput()"
-class="hidden absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-stone-200 text-stone-500 hover:bg-stone-300 text-lg font-bold"</button>
-                    
-                    
+                        <input type="text" id="search-input" oninput="renderItems()" placeholder="ค้นหาเสื้อผ้า, แบรนด์, สี..." class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-stone-200 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-stone-400">
                     </div>
 
                     <!-- Items Grid -->
@@ -747,23 +739,6 @@ sortedItems.forEach(item => {
             renderItems();
         }
 
-
-function clearSearchInput() {
-    const input = document.getElementById('search-input');
-    const clearButton = document.getElementById('clear-search');
-
-    input.value = '';
-    clearButton.classList.add('hidden');
-
-    renderItems();
-}
-function toggleClearSearch() {
-    const input = document.getElementById('search-input');
-    const clearButton = document.getElementById('clear-search');
-
-    clearButton.classList.toggle('hidden', input.value.trim() === '');
-}
-        
         function renderItems() {
             const grid = document.getElementById('items-grid');
             const searchQuery = document.getElementById('search-input').value.toLowerCase();
