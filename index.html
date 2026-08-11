@@ -2477,9 +2477,39 @@ try {
         }
 
         function updateCounts() {
-            document.getElementById('count-items').innerText = items.length;
-            document.getElementById('count-outfits').innerText = outfits.length;
+    // จำนวนสินค้าทั้งหมด
+    document.getElementById('count-items').innerText = items.length;
+
+    // จำนวนชุดที่บันทึก
+    document.getElementById('count-outfits').innerText = outfits.length;
+
+    // นับจำนวนสินค้าแต่ละหมวด
+    const categoryCounts = {
+        tshirt: items.filter(item => item.category === 'tshirt').length,
+        shirt: items.filter(item => item.category === 'shirt').length,
+        jacket: items.filter(item => item.category === 'jacket').length,
+        pants: items.filter(item => item.category === 'pants').length,
+        glasses: items.filter(item => item.category === 'glasses').length,
+        shoes: items.filter(item => item.category === 'shoes').length
+    };
+
+    // แสดงจำนวนบนปุ่มหมวดหมู่
+    const countElements = {
+        tshirt: document.getElementById('count-tshirt'),
+        shirt: document.getElementById('count-shirt'),
+        jacket: document.getElementById('count-jacket'),
+        pants: document.getElementById('count-pants'),
+        glasses: document.getElementById('count-glasses'),
+        shoes: document.getElementById('count-shoes')
+    };
+
+    Object.keys(categoryCounts).forEach(category => {
+        if (countElements[category]) {
+            countElements[category].innerText =
+                `(${categoryCounts[category]})`;
         }
+    });
+}
 
         async function loadItemsFromGoogle(showMessage = true) {
             if (!googleScriptUrl) return;
