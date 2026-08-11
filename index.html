@@ -202,9 +202,27 @@
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                             <div>
                                 <label class="text-[11px] font-medium text-stone-500 mb-1 block">1. แว่นตา / แอคเซสเซอรี</label>
-                                <select id="select-glasses" onchange="updateMixerCanvas()" class="w-full p-2 text-xs rounded-xl border border-stone-200 bg-stone-50">
-                                    <option value="">-- เลือก --</option>
-                                </select>
+                                <div class="space-y-1">
+                                    <button
+                                        type="button"
+                                        onclick="openOutfitPicker('glasses')"
+                                        class="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50 text-xs text-left flex items-center justify-between hover:bg-white transition active:bg-white"
+                                    >
+                                        <span id="glasses-picker-label" class="text-stone-500">
+                                            🕶️ กดเพื่อเลือกแว่นตาจากรูป
+                                        </span>
+                                        <i class="fa-solid fa-chevron-right text-stone-400"></i>
+                                    </button>
+
+                                    <!-- เก็บ ID สินค้าไว้เบื้องหลัง -->
+                                    <select
+                                        id="select-glasses"
+                                        onchange="updateMixerCanvas()"
+                                        class="hidden"
+                                    >
+                                        <option value="">-- ไม่เลือก --</option>
+                                    </select>
+                                </div>
                             </div>
                             <div>
                                 <label class="text-[11px] font-medium text-stone-500 mb-1 block">2. เสื้อตัวใน (ยืด/เชิ้ต)</label>
@@ -233,9 +251,27 @@
                             </div>
                             <div>
                                 <label class="text-[11px] font-medium text-stone-500 mb-1 block">3. แจ็คเก็ต / คาร์ดิแกน</label>
-                                <select id="select-jacket" onchange="updateMixerCanvas()" class="w-full p-2 text-xs rounded-xl border border-stone-200 bg-stone-50">
-                                    <option value="">-- เลือก --</option>
-                                </select>
+                                <div class="space-y-1">
+                                    <button
+                                        type="button"
+                                        onclick="openOutfitPicker('jacket')"
+                                        class="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50 text-xs text-left flex items-center justify-between hover:bg-white transition active:bg-white"
+                                    >
+                                        <span id="jacket-picker-label" class="text-stone-500">
+                                            🧥 กดเพื่อเลือกแจ็คเก็ตจากรูป
+                                        </span>
+                                        <i class="fa-solid fa-chevron-right text-stone-400"></i>
+                                    </button>
+
+                                    <!-- เก็บ ID สินค้าไว้เบื้องหลัง -->
+                                    <select
+                                        id="select-jacket"
+                                        onchange="updateMixerCanvas()"
+                                        class="hidden"
+                                    >
+                                        <option value="">-- ไม่เลือก --</option>
+                                    </select>
+                                </div>
                             </div>
                             <div>
                                 <label class="text-[11px] font-medium text-stone-500 mb-1 block">4. กางเกง / กระโปรง</label>
@@ -264,9 +300,27 @@
                             </div>
                             <div>
                                 <label class="text-[11px] font-medium text-stone-500 mb-1 block">5. รองเท้า</label>
-                                <select id="select-shoes" onchange="updateMixerCanvas()" class="w-full p-2 text-xs rounded-xl border border-stone-200 bg-stone-50">
-                                    <option value="">-- เลือก --</option>
-                                </select>
+                                <div class="space-y-1">
+                                    <button
+                                        type="button"
+                                        onclick="openOutfitPicker('shoes')"
+                                        class="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50 text-xs text-left flex items-center justify-between hover:bg-white transition active:bg-white"
+                                    >
+                                        <span id="shoes-picker-label" class="text-stone-500">
+                                            👟 กดเพื่อเลือกรองเท้าจากรูป
+                                        </span>
+                                        <i class="fa-solid fa-chevron-right text-stone-400"></i>
+                                    </button>
+
+                                    <!-- เก็บ ID สินค้าไว้เบื้องหลัง -->
+                                    <select
+                                        id="select-shoes"
+                                        onchange="updateMixerCanvas()"
+                                        class="hidden"
+                                    >
+                                        <option value="">-- ไม่เลือก --</option>
+                                    </select>
+                                </div>
                             </div>
                             <div>
                                 <label class="text-[11px] font-medium text-stone-500 mb-1 block">โอกาส (Occasion)</label>
@@ -1982,9 +2036,26 @@ function openOutfitPicker(slot) {
         }
 
         function resetMixerCanvas() {
+            const pickerDefaults = {
+                glasses: '🕶️ กดเพื่อเลือกแว่นตาจากรูป',
+                shirt: '👕 กดเพื่อเลือกเสื้อจากรูป',
+                jacket: '🧥 กดเพื่อเลือกแจ็คเก็ตจากรูป',
+                pants: '👖 กดเพื่อเลือกกางเกงจากรูป',
+                shoes: '👟 กดเพื่อเลือกรองเท้าจากรูป'
+            };
+
             ['glasses', 'shirt', 'jacket', 'pants', 'shoes'].forEach(slot => {
-                document.getElementById(`select-${slot}`).value = '';
+                const select = document.getElementById(`select-${slot}`);
+                if (select) select.value = '';
+
+                const label = document.getElementById(`${slot}-picker-label`);
+                if (label) {
+                    label.innerHTML = pickerDefaults[slot];
+                    label.classList.remove('text-stone-800', 'font-medium');
+                    label.classList.add('text-stone-500');
+                }
             });
+
             updateMixerCanvas();
         }
 
