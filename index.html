@@ -149,11 +149,26 @@
                 </div>
 
                 <!-- SUB-TAB: SAVED OUTFITS LIST -->
-                <div id="subtab-outfits" class="hidden space-y-4">
-                    <div id="outfits-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Dynamic outfits loaded via JS -->
-                    </div>
-                </div>
+               <div id="subtab-outfits" class="hidden space-y-4">
+
+    <!-- Search Outfit -->
+    <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-stone-400 text-sm"></i>
+
+        <input
+            type="text"
+            id="outfit-search-input"
+            oninput="renderOutfits()"
+            placeholder="ค้นหาชื่อชุด เช่น ไปเที่ยว, ทำงาน, My Custom Outfit..."
+            class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-stone-200 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+        >
+    </div>
+
+    <div id="outfits-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Dynamic outfits loaded via JS -->
+    </div>
+
+</div>
             </section>
 
             <!-- SECTION 2: MIX & MATCH (จัดชุด Outfit Builder) -->
@@ -2120,6 +2135,19 @@ function openOutfitPicker(slot) {
             const grid = document.getElementById('outfits-grid');
             grid.innerHTML = '';
 
+                const searchInput = document.getElementById('outfit-search-input');
+    const searchKeyword = searchInput
+        ? searchInput.value.trim().toLowerCase()
+        : '';
+
+    const filteredOutfits = outfits.filter(outfit => {
+        if (!searchKeyword) return true;
+
+        return String(outfit.name || '')
+            .toLowerCase()
+            .includes(searchKeyword);
+    });
+
             if(outfits.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full py-10 text-center text-stone-400 bg-white rounded-2xl border border-stone-200">
@@ -2130,7 +2158,7 @@ function openOutfitPicker(slot) {
                 return;
             }
 
-            outfits.forEach(outfit => {
+            filteredOutfits.forEach(outfit => {
                 const outfitItems = outfit.itemIds.map(id => items.find(i => i.id === id)).filter(Boolean);
                 const card = document.createElement('div');
                 card.onclick = () => openOutfitDetail(outfit.id);
