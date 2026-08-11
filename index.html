@@ -117,22 +117,22 @@
                             ทั้งหมด
                         </button>
                         <button onclick="filterCategory('tshirt')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            👕 เสื้อ
+                            👕 เสื้อ <span id="count-tshirt">(0)</span>
                         </button>
                         <button onclick="filterCategory('shirt')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            👔 เสื้อเชิ้ต
+                            👔 เสื้อเชิ้ต <span id="count-shirt">(0)</span>
                         </button>
                         <button onclick="filterCategory('jacket')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            🧥 แจ็คเก็ต
+                            🧥 แจ็คเก็ต <span id="count-jacket">(0)</span>
                         </button>
                         <button onclick="filterCategory('pants')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            👖 กางเกง
+                            👖 กางเกง <span id="count-pants">(0)</span>
                         </button>
                         <button onclick="filterCategory('glasses')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            🕶️ แว่นตา
+                            🕶️ แว่นตา <span id="count-glasses">(0)</span>
                         </button>
                         <button onclick="filterCategory('shoes')" class="cat-chip px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white text-stone-600 border border-stone-200 transition">
-                            👟 รองเท้า
+                            👟 รองเท้า <span id="count-shoes">(0)</span>
                         </button>
                     </div>
 
@@ -2471,10 +2471,40 @@ try {
             localStorage.setItem('my_closet_calendar', JSON.stringify(calendarPlan));
         }
 
-        function updateCounts() {
-            document.getElementById('count-items').innerText = items.length;
-            document.getElementById('count-outfits').innerText = outfits.length;
+        {
+    // จำนวนสินค้าทั้งหมด
+    document.getElementById('count-items').innerText = items.length;
+
+    // จำนวนชุดที่บันทึก
+    document.getElementById('count-outfits').innerText = outfits.length;
+
+    // นับจำนวนสินค้าแต่ละหมวด
+    const categoryCounts = {
+        tshirt: items.filter(item => item.category === 'tshirt').length,
+        shirt: items.filter(item => item.category === 'shirt').length,
+        jacket: items.filter(item => item.category === 'jacket').length,
+        pants: items.filter(item => item.category === 'pants').length,
+        glasses: items.filter(item => item.category === 'glasses').length,
+        shoes: items.filter(item => item.category === 'shoes').length
+    };
+
+    // แสดงจำนวนบนปุ่มหมวดหมู่
+    const countElements = {
+        tshirt: document.getElementById('count-tshirt'),
+        shirt: document.getElementById('count-shirt'),
+        jacket: document.getElementById('count-jacket'),
+        pants: document.getElementById('count-pants'),
+        glasses: document.getElementById('count-glasses'),
+        shoes: document.getElementById('count-shoes')
+    };
+
+    Object.keys(categoryCounts).forEach(category => {
+        if (countElements[category]) {
+            countElements[category].innerText =
+                `(${categoryCounts[category]})`;
         }
+    });
+}
 
         async function loadItemsFromGoogle(showMessage = true) {
             if (!googleScriptUrl) return;
