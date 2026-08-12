@@ -220,10 +220,22 @@
 <div id="canvas-shoes" onclick="openOutfitPicker('shoes')" class="w-28 h-20 bg-white/60 rounded-xl border border-dashed border-stone-300 flex items-center justify-center relative cursor-pointer">                                <span class="text-stone-300 text-xs">รองเท้า</span>
                             </div>
                         </div>
-                    </div>
+                   </div>
 
-                    <!-- Item Selector Controls -->
-                    <div class="space-y-3">
+<!-- AI TRY IT ON -->
+<div class="pt-2">
+    <button
+        type="button"
+        onclick="openTryOnModal()"
+        class="w-full py-3.5 rounded-2xl bg-stone-900 text-white text-sm font-semibold shadow-md hover:bg-stone-800 transition active:scale-[0.98] flex items-center justify-center gap-2"
+    >
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span>TRY IT ON</span>
+    </button>
+</div>
+
+<!-- Item Selector Controls -->
+<div class="space-y-3">
                         <h3 class="text-xs font-bold text-stone-700 uppercase tracking-wider">เลือกชิ้นส่วนใส่ในชุด</h3>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                             <div>
@@ -2654,6 +2666,263 @@ saveData();
                 toast.classList.remove('opacity-100');
             }, 2500);
         }
+
+// ==========================================
+// AI TRY IT ON
+// ==========================================
+
+let tryOnImageBase64 = '';
+
+function openTryOnModal() {
+    const modal = document.getElementById('try-on-modal');
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+
+    // Reset รูปทุกครั้งที่เปิด
+    tryOnImageBase64 = '';
+
+    const preview = document.getElementById('try-on-preview');
+    const button = document.getElementById('generate-try-on-btn');
+
+    if (preview) {
+        preview.innerHTML = `
+            <i class="fa-solid fa-camera text-3xl text-stone-300 mb-3"></i>
+            <p class="text-sm font-semibold text-stone-600">
+                อัปโหลดรูปของคุณ
+            </p>
+            <p class="text-xs text-stone-400 mt-1">
+                แนะนำรูปเต็มตัว เห็นรูปร่างชัดเจน
+            </p>
+        `;
+    }
+
+    if (button) {
+        button.disabled = true;
+        button.className =
+            'w-full py-3.5 rounded-2xl bg-stone-300 text-white text-sm font-semibold cursor-not-allowed transition';
+    }
+
+    const input = document.getElementById('try-on-photo');
+    if (input) input.value = '';
+}
+
+
+function closeTryOnModal() {
+    const modal = document.getElementById('try-on-modal');
+
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+
+    tryOnImageBase64 = '';
+
+    const input = document.getElementById('try-on-photo');
+    if (input) input.value = '';
+}
+
+
+async function handleTryOnPhoto(event) {
+
+    const file = event.target.files && event.target.files[0];
+
+    if (!file) return;
+
+    const preview = document.getElementById('try-on-preview');
+    const button = document.getElementById('generate-try-on-btn');
+
+    try {
+
+        preview.innerHTML = `
+            <div class="flex flex-col items-center justify-center">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-stone-400 mb-3"></i>
+                <p class="text-sm text-stone-500">
+                    กำลังเตรียมรูป...
+                </p>
+            </div>
+        `;
+
+        const dataUrl = await compressImageToDataUrl(file);
+
+        tryOnImageBase64 = dataUrl;
+
+        preview.innerHTML = `
+            <img
+                src="${dataUrl}"
+                class="w-full h-full object-contain"
+                alt="รูปของคุณ"
+            >
+        `;
+
+        // เปิดปุ่ม Generate
+        button.disabled = false;
+
+        button.className =
+            'w-full py-3.5 rounded-2xl bg-stone-900 text-white text-sm font-semibold cursor-pointer hover:bg-stone-800 transition active:scale-[0.98]';
+
+    } catch (error) {
+
+        console.error('Try On image error:', error);
+
+        tryOnImageBase64 = '';
+
+        preview.innerHTML = `
+            <i class="fa-solid fa-triangle-exclamation text-3xl text-rose-400 mb-3"></i>
+            <p class="text-sm font-semibold text-rose-500">
+                อ่านรูปไม่สำเร็จ
+            </p>
+            <p class="text-xs text-stone-400 mt-1">
+                กรุณาลองเลือกรูปใหม่
+            </p>
+        `;
+
+        button.disabled = true;
+
+        showToast(
+            'อ่านรูปภาพไม่สำเร็จ กรุณาลองใหม่',
+            'error'
+        );
+    }
+}
+
+
+async function generateTryOn() {
+
+    if (!tryOnImageBase64) {
+        showToast(
+            'กรุณาอัปโหลดรูปของคุณก่อน',
+            'warning'
+        );
+        return;
+    }
+
+    const button = document.getElementById('generate-try-on-btn');
+
+    button.disabled = true;
+
+    button.innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+        กำลังสร้างลุค...
+    `;
+
+    try {
+
+        // ขั้นนี้เป็นการทดสอบระบบก่อน
+        // ยังไม่ได้เชื่อม AI Image Generation จริง
+
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        showToast(
+            'อัปโหลดรูปสำเร็จ พร้อมเชื่อมต่อ AI',
+            'success'
+        );
+
+        button.disabled = false;
+
+        button.innerHTML = `
+            ✨ Generate Look
+        `;
+
+    } catch (error) {
+
+        console.error('Generate Try On Error:', error);
+
+        showToast(
+            'สร้างภาพไม่สำเร็จ',
+            'error'
+        );
+
+        button.disabled = false;
+
+        button.innerHTML = `
+            ✨ Generate Look
+        `;
+    }
+}
+        
     </script>
+
+<!-- AI TRY IT ON MODAL -->
+<div
+    id="try-on-modal"
+    class="hidden fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+>
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-stone-100">
+            <div>
+                <h2 class="text-lg font-bold text-stone-900">
+                    ✨ AI Try It On
+                </h2>
+                <p class="text-xs text-stone-500 mt-1">
+                    ลองชุดนี้กับตัวคุณเอง
+                </p>
+            </div>
+
+            <button
+                type="button"
+                onclick="closeTryOnModal()"
+                class="w-9 h-9 rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 flex items-center justify-center text-lg"
+            >
+                ×
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="p-5 space-y-4">
+
+            <div class="text-sm font-semibold text-stone-700">
+                📷 รูปของคุณ
+            </div>
+
+            <!-- Upload Area -->
+            <label
+                for="try-on-photo"
+                id="try-on-upload-area"
+                class="block cursor-pointer"
+            >
+                <div
+                    id="try-on-preview"
+                    class="w-full aspect-[3/4] rounded-2xl border-2 border-dashed border-stone-300 bg-stone-50 flex flex-col items-center justify-center text-center overflow-hidden"
+                >
+                    <i class="fa-solid fa-camera text-3xl text-stone-300 mb-3"></i>
+
+                    <p class="text-sm font-semibold text-stone-600">
+                        อัปโหลดรูปของคุณ
+                    </p>
+
+                    <p class="text-xs text-stone-400 mt-1">
+                        แนะนำรูปเต็มตัว เห็นรูปร่างชัดเจน
+                    </p>
+                </div>
+            </label>
+
+            <input
+                type="file"
+                id="try-on-photo"
+                accept="image/*"
+                class="hidden"
+                onchange="handleTryOnPhoto(event)"
+            >
+
+            <!-- Generate Button -->
+            <button
+                type="button"
+                id="generate-try-on-btn"
+                onclick="generateTryOn()"
+                disabled
+                class="w-full py-3.5 rounded-2xl bg-stone-300 text-white text-sm font-semibold cursor-not-allowed transition"
+            >
+                ✨ Generate Look
+            </button>
+
+            <p class="text-[11px] text-center text-stone-400">
+                รูปของคุณจะถูกใช้สำหรับการจำลองการสวมใส่ชุด
+            </p>
+
+        </div>
+    </div>
+</div>
 </body>
 </html>
