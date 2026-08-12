@@ -2787,53 +2787,78 @@ async function handleTryOnPhoto(event) {
 
 
 async function generateTryOn() {
-
     if (!tryOnImageBase64) {
-        showToast(
-            'กรุณาอัปโหลดรูปของคุณก่อน',
-            'warning'
-        );
+        showToast('กรุณาอัปโหลดรูปของคุณก่อน', 'warning');
         return;
     }
 
     const button = document.getElementById('generate-try-on-btn');
+    const preview = document.getElementById('try-on-preview');
 
     button.disabled = true;
-
     button.innerHTML = `
         <i class="fa-solid fa-spinner fa-spin mr-2"></i>
         กำลังสร้างลุค...
     `;
 
     try {
+        const response = await fetch('/api/try-on', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image: tryOnImageBase64,
+                prompt: `
+Create a realistic full-body fashion try-on image.
 
-        // ขั้นนี้เป็นการทดสอบระบบก่อน
-        // ยังไม่ได้เชื่อม AI Image Generation จริง
+Use the uploaded person as the main identity reference.
+Preserve the person's face, hairstyle, body proportions and identity as much as possible.
 
-        await new Promise(resolve => setTimeout(resolve, 1200));
+Change the clothing into a stylish modern casual outfit.
+Make the result look like a professional fashion photography studio image.
+Natural realistic lighting, realistic fabric, realistic body proportions.
+Keep the person standing naturally and show the full body.
+Do not change the person's identity.
+                `.trim()
+            })
+        });
 
-        showToast(
-            'อัปโหลดรูปสำเร็จ พร้อมเชื่อมต่อ AI',
-            'success'
-        );
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'ไม่สามารถสร้างภาพได้');
+        }
+
+        if (!data.image) {
+            throw new Error('AI ไม่ได้ส่งภาพกลับมา');
+        }
+
+        // แสดงภาพที่ AI สร้าง
+        preview.innerHTML = `
+            <img
+                src="${data.image}"
+                class="w-full h-full object-contain"
+                alt="AI Try On Result"
+            >
+        `;
+
+        showToast('✨ สร้างลุคสำเร็จแล้ว', 'success');
 
         button.disabled = false;
-
         button.innerHTML = `
             ✨ Generate Look
         `;
 
     } catch (error) {
-
         console.error('Generate Try On Error:', error);
 
         showToast(
-            'สร้างภาพไม่สำเร็จ',
+            error.message || 'สร้างภาพไม่สำเร็จ',
             'error'
         );
 
         button.disabled = false;
-
         button.innerHTML = `
             ✨ Generate Look
         `;
