@@ -552,65 +552,18 @@
     </div>
 
     <script>
-        const initialItems = [
-            {
-                id: '1',
-                title: 'Polka Dot Blouse with Bow',
-                category: 'shirt',
-                brand: 'ZARA',
-                color: 'Cream',
-                image: 'https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=500&auto=format&fit=crop&q=80',
-                favorite: true
-            },
-            {
-                id: '2',
-                title: 'High-rise Wide-leg Jeans',
-                category: 'pants',
-                brand: 'Abercrombie & Fitch',
-                color: 'Light Blue',
-                image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&auto=format&fit=crop&q=80',
-                favorite: false
-            },
-            {
-                id: '3',
-                title: 'Classic Oversized Denim Jacket',
-                category: 'jacket',
-                brand: 'Levi\'s',
-                color: 'Medium Wash',
-                image: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500&auto=format&fit=crop&q=80',
-                favorite: true
-            },
-            {
-                id: '4',
-                title: 'Retro Dark Sunglasses',
-                category: 'glasses',
-                brand: 'Ray-Ban',
-                color: 'Black',
-                image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500&auto=format&fit=crop&q=80',
-                favorite: false
-            },
-            {
-                id: '5',
-                title: 'Essential Crew Neck T-Shirt',
-                category: 'tshirt',
-                brand: 'Uniqlo',
-                color: 'White',
-                image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=80',
-                favorite: false
-            },
-            {
-                id: '6',
-                title: 'White Canvas Low Sneakers',
-                category: 'shoes',
-                brand: 'Converse',
-                color: 'White',
-                image: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=500&auto=format&fit=crop&q=80',
-                favorite: true
-            }
-        ];
+       const initialItems = [];
 
         // State variables
-        let items = JSON.parse(localStorage.getItem('my_closet_items')) || initialItems;
+        let storedItems = JSON.parse(localStorage.getItem('my_closet_items') || '[]');
+
+if (Array.isArray(storedItems) &&
+    storedItems.some(item => String(item?.image || '').includes('images.unsplash.com'))) {
+    localStorage.removeItem('my_closet_items');
+    storedItems = [];
+}
+
+let items = storedItems;
         let outfits = JSON.parse(localStorage.getItem('my_closet_outfits')) || [];
         let calendarPlan = JSON.parse(localStorage.getItem('my_closet_calendar')) || {};
         let activeCategory = 'all';
@@ -622,20 +575,32 @@
         let isSyncing = false;
 
         // Initialize App on Load
-        window.onload = function() {
-            renderAllItems();
-            renderItems();
-            renderOutfits();
-            populateMixerDropdowns();
-            renderCalendar();
-            updateCounts();
-            if(googleScriptUrl) {
-                document.getElementById('google-script-url').value = googleScriptUrl;
-            }
-            setTimeout(() => {
-    loadItemsFromGoogle(false).catch(() => {});
-}, 0);
-        };
+    window.onload = async function() {
+    renderAllItems();
+    renderItems();
+    renderOutfits();
+    populateMixerDropdowns();
+    renderCalendar();
+    updateCounts();
+
+    if (googleScriptUrl) {
+        document.getElementById('google-script-url').value = googleScriptUrl;
+    }
+
+    try {
+        await loadItemsFromGoogle(false);
+    } catch (error) {
+        console.error('Initial Google load failed:', error);
+    }
+
+    renderAllItems();
+    renderItems();
+    renderOutfits();
+    populateMixerDropdowns();
+    updateMixerCanvas();
+    renderCalendar();
+    updateCounts();
+};
 
         // --- NAVIGATION & TABS ---
         function switchTab(tabId) {
